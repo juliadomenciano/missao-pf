@@ -1,0 +1,182 @@
+{
+ "id": "caso-01",
+ "titulo": "Operação Galpão",
+ "materia": "penal",
+ "resumo": "Uma denúncia anônima sobre cocaína guardada para exportação. Cada decisão sua tem consequências e fundamento na lei.",
+ "inicio": "n1",
+ "nos": {
+  "n1": {
+   "texto": "Você é Agente de Polícia Federal em uma cidade de fronteira. A delegacia recebe uma <b>denúncia anônima</b>: um galpão no distrito industrial estaria guardando cocaína que será levada ao exterior nos próximos dias. A equipe se reúne com o delegado. Qual deve ser o primeiro passo?",
+   "opcoes": [
+    {
+     "t": "Instaurar o inquérito policial imediatamente, com base apenas na denúncia.",
+     "pts": 2,
+     "fb": "Para o STF e o STJ, a denúncia anônima <b>isolada</b> não basta para instaurar o inquérito. Antes, a polícia deve fazer <b>diligências preliminares</b> para verificar se as informações têm verossimilhança.",
+     "prox": "n2"
+    },
+    {
+     "t": "Fazer diligências preliminares discretas (campana e levantamento de informações) para verificar a denúncia.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto. A denúncia anônima serve para motivar <b>diligências preliminares</b>. Confirmados os indícios, aí sim cabe instaurar o inquérito e adotar outras medidas.",
+     "prox": "n2"
+    },
+    {
+     "t": "Entrar no galpão agora, sem mandado, para conferir se há droga.",
+     "pts": 0,
+     "fb": "Arriscado e ilegal. O compartimento não aberto ao público onde alguém exerce atividade é protegido como <b>casa</b> (art. 5º, XI, da CF). Para o STF (<b>Tema 280</b>), a entrada forçada sem mandado exige <b>fundadas razões</b> de flagrante, e uma denúncia anônima sozinha não é suficiente. A prova poderia ser anulada.",
+     "prox": "n2"
+    }
+   ]
+  },
+  "n2": {
+   "texto": "Durante a campana, no fim da tarde, a equipe vê dois homens descarregando caixas de um caminhão para dentro do galpão. Uma das caixas cai e se rompe, deixando à mostra <b>tabletes envoltos em fita adesiva</b>, típicos de cocaína. Os homens recolhem os tabletes às pressas e entram no galpão. O que a equipe faz?",
+   "opcoes": [
+    {
+     "t": "Entrar no galpão e prender os suspeitos em flagrante.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto. Há <b>fundadas razões</b> concretas de que um crime está ocorrendo dentro do imóvel, então o ingresso sem mandado é lícito, a qualquer hora (art. 5º, XI; Tema 280 do STF). Além disso, o tráfico na modalidade \"ter em depósito\" é <b>crime permanente</b>: o agente está em flagrante enquanto não cessar a permanência (art. 303 do CPP).",
+     "prox": "n3"
+    },
+    {
+     "t": "Não entrar e aguardar um mandado de busca e apreensão.",
+     "pts": 4,
+     "fb": "Seria lícito, mas desnecessário: a situação de flagrante já autoriza o ingresso, a qualquer hora. Enquanto a equipe esperasse, a droga poderia ser retirada. A equipe acaba entrando quando os suspeitos tentam sair com parte da carga.",
+     "prox": "n3"
+    },
+    {
+     "t": "Deixar o caminhão partir e segui-lo até o destino final, sem avisar ninguém.",
+     "pts": 2,
+     "fb": "Retardar a intervenção policial para identificar mais integrantes é a <b>ação controlada</b>. No tráfico de drogas, ela depende de <b>autorização judicial</b>, ouvido o Ministério Público (Lei 11.343/2006, art. 53, II). Sem isso, a equipe se expõe a responsabilização. O delegado manda intervir imediatamente.",
+     "prox": "n3"
+    }
+   ]
+  },
+  "n3": {
+   "texto": "Dentro do galpão, um dos suspeitos se rende de imediato e se deita no chão. O outro empurra um agente e tenta fugir pelos fundos, mas é contido. Como fica o uso de algemas?",
+   "opcoes": [
+    {
+     "t": "Algemar os dois como procedimento padrão, sem registro.",
+     "pts": 3,
+     "fb": "A <b>Súmula Vinculante 11</b> só permite algemas em caso de <b>resistência</b>, <b>fundado receio de fuga</b> ou <b>perigo à integridade física</b> própria ou alheia, e exige <b>justificativa por escrito</b>. Algemar sempre, sem justificar, pode gerar responsabilidade e nulidade da prisão.",
+     "prox": "n4"
+    },
+    {
+     "t": "Algemar o que resistiu e tentou fugir, justificando por escrito, e avaliar o outro conforme o risco.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto. É o que exige a <b>SV 11</b>: o uso é excepcional e a justificativa deve ser <b>escrita</b>. Se houver fundado receio quanto ao segundo preso, ele também pode ser algemado, sempre com justificativa.",
+     "prox": "n4"
+    },
+    {
+     "t": "Não algemar ninguém, porque algema é sempre proibida.",
+     "pts": 2,
+     "fb": "Não é proibida. A resistência e a tentativa de fuga justificam o uso, desde que registrado por escrito (SV 11).",
+     "prox": "n4"
+    }
+   ]
+  },
+  "n4": {
+   "texto": "No galpão há <b>1.200 kg de cocaína</b>. O celular de um dos presos não para de vibrar com mensagens. Um colega sugere ver as conversas ali mesmo, para descobrir quem é o comprador. O que você faz?",
+   "opcoes": [
+    {
+     "t": "Desbloquear o celular e ler as conversas de aplicativo na hora.",
+     "pts": 0,
+     "fb": "O STJ considera <b>ilícita</b> a prova obtida pelo acesso aos dados e às conversas do celular do preso <b>sem autorização judicial</b> ou consentimento válido. As provas derivadas também ficariam contaminadas.",
+     "prox": "n5"
+    },
+    {
+     "t": "Apreender o aparelho e pedir ao delegado que represente ao juiz pelo acesso aos dados.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto. A autoridade deve <b>apreender os objetos</b> relacionados ao fato (art. 6º, II, do CPP), e o acesso ao conteúdo depende de <b>ordem judicial</b>. Assim, a prova fica válida.",
+     "prox": "n5"
+    },
+    {
+     "t": "Atender a próxima ligação fingindo ser o preso, para marcar um encontro com o comprador.",
+     "pts": 1,
+     "fb": "Há precedentes do STJ considerando <b>ilícita</b> a prova obtida por policial que atende o telefone do preso e se passa por ele sem autorização judicial. O caminho seguro é apreender e pedir a quebra ao juiz.",
+     "prox": "n5"
+    }
+   ]
+  },
+  "n5": {
+   "texto": "Os presos são apresentados ao delegado para a lavratura do <b>auto de prisão em flagrante</b>. Você foi o condutor. Qual é a ordem correta dos atos?",
+   "opcoes": [
+    {
+     "t": "Ouvir o condutor, depois as testemunhas e, por fim, interrogar o preso.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto, é a ordem do <b>art. 304 do CPP</b>: primeiro o condutor (que recebe cópia do termo e recibo de entrega do preso), depois as testemunhas e, em seguida, o interrogatório do conduzido.",
+     "prox": "n6"
+    },
+    {
+     "t": "Interrogar o preso primeiro, enquanto os fatos estão frescos, e depois ouvir o condutor.",
+     "pts": 0,
+     "fb": "A ordem está invertida. O art. 304 do CPP determina ouvir o <b>condutor</b>, depois as <b>testemunhas</b> e só então interrogar o <b>preso</b>.",
+     "prox": "n6"
+    },
+    {
+     "t": "Ouvir apenas o condutor, porque testemunhas são dispensáveis no flagrante.",
+     "pts": 3,
+     "fb": "Se houver testemunhas, elas devem ser ouvidas. Mesmo sem testemunhas da infração, o auto deve ser assinado por pelo menos <b>duas pessoas que tenham testemunhado a apresentação do preso</b> (art. 304, § 2º, do CPP).",
+     "prox": "n6"
+    }
+   ]
+  },
+  "n6": {
+   "texto": "Auto lavrado. Quais comunicações e providências são obrigatórias depois da prisão?",
+   "opcoes": [
+    {
+     "t": "Comunicar imediatamente ao juiz, ao MP e à família (ou pessoa indicada). Em até 24 h, enviar o auto ao juiz (e à Defensoria, se não houver advogado) e entregar a nota de culpa ao preso.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto, é o <b>art. 306 do CPP</b>: comunicação <b>imediata</b> ao juiz, ao MP e à família; em até <b>24 horas</b>, o auto vai ao juiz (e à Defensoria, se o preso não indicar advogado), e o preso recebe a <b>nota de culpa</b>. O juiz deve realizar a <b>audiência de custódia</b> em até 24 horas da prisão (art. 310).",
+     "prox": "n7"
+    },
+    {
+     "t": "Comunicar apenas o juiz, em até 48 horas.",
+     "pts": 0,
+     "fb": "Errado. A comunicação ao juiz, ao MP e à família é <b>imediata</b>, e o auto deve ser enviado em até <b>24 horas</b> (art. 306 do CPP).",
+     "prox": "n7"
+    },
+    {
+     "t": "Comunicar o juiz e a família e entregar a nota de culpa em até 72 horas.",
+     "pts": 3,
+     "fb": "Faltou o <b>Ministério Público</b>, e o prazo da nota de culpa é de <b>24 horas</b> (art. 306, § 2º, do CPP).",
+     "prox": "n7"
+    }
+   ]
+  },
+  "n7": {
+   "texto": "O inquérito é instaurado pela prisão em flagrante por <b>tráfico internacional de drogas</b>, e os indiciados continuam presos. Qual é o prazo para concluir o inquérito?",
+   "opcoes": [
+    {
+     "t": "10 dias, como manda a regra geral do CPP para o indiciado preso.",
+     "pts": 3,
+     "fb": "Essa é a regra geral (art. 10 do CPP), mas a <b>Lei de Drogas</b> tem regra especial, que prevalece.",
+     "prox": "fim"
+    },
+    {
+     "t": "15 dias, prorrogáveis por mais 15, como nos inquéritos da Justiça Federal.",
+     "pts": 5,
+     "fb": "É a regra geral dos inquéritos federais com preso (Lei 5.010/1966, art. 66). Mas, no tráfico, vale a regra especial da <b>Lei 11.343/2006</b>.",
+     "prox": "fim"
+    },
+    {
+     "t": "30 dias, que o juiz pode duplicar a pedido justificado da autoridade, ouvido o MP.",
+     "pts": 10,
+     "ok": true,
+     "fb": "Correto. A Lei 11.343/2006, art. 51, fixa <b>30 dias</b> para indiciado preso e <b>90 dias</b> para solto. Os prazos podem ser <b>duplicados</b> pelo juiz, ouvido o MP, mediante pedido justificado da autoridade de polícia judiciária.",
+     "prox": "fim"
+    }
+   ]
+  },
+  "fim": {
+   "fim": true,
+   "texto": "A operação termina com 1.200 kg de cocaína apreendidos, dois presos em flagrante e o celular à disposição da Justiça. O inquérito segue para identificar o comprador no exterior, com cooperação internacional."
+  }
+ },
+ "fontes": "CF, art. 5º, XI; CPP, arts. 6º, 10, 303, 304, 306 e 310; Lei 11.343/2006, arts. 51 e 53; Lei 5.010/1966, art. 66; Súmula Vinculante 11; Tema 280 do STF. Confira sempre o texto atualizado da lei."
+}

@@ -4,6 +4,7 @@ import { setupNative, askPermission, scheduleAlert, cancelAlert, isNative } from
 import { getLessonText } from './lessons.js';
 import { initRevisao, applyReminders } from './revisao.js';
 import { initExtras } from './extras.js';
+import { initCasos } from './casos.js';
 import { initQuest, renderQdia, renderSimulados, renderErros, lessonAnswered, aulaEstudada } from './quest.js';
 
 const MAT=[
@@ -464,6 +465,7 @@ const NAV=[
 const EXT={};
 const TITLES={login:'Entrar'};
 NAV.forEach(([,l])=>l.forEach(([id,n])=>TITLES[id]=n));
+TITLES.casos='Casos';TITLES.estudos='Ciclo';
 const BASE_VIEWS_=['hoje','pomodoro','estudos','aulas','taf','login','qdia','simulados','erros','config'];
 const BASE_VIEWS=BASE_VIEWS_;
 function viewOk(id){return BASE_VIEWS.includes(id)||(!!EXT[id]&&!['counts','hoje','config','patente','taf'].includes(id))}
@@ -643,3 +645,4 @@ export const ctx={S,getDoc,save,local,$,esc,clone,pad,dkey,parseKey,addDays,week
 initQuest(ctx);
 initRevisao(ctx);
 initExtras(ctx);
+initCasos(ctx);

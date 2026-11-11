@@ -302,3 +302,7 @@ button.li:hover{border-color:var(--line)}
 .crono-t{font-family:var(--display);font-weight:800;font-size:clamp(48px,14vw,72px);line-height:1}
 .crono .f{width:100%;max-width:260px}
 .li.plano .k{color:var(--muted)}
+
+.caso p{font-size:17px}
+.li.opc{align-items:flex-start;padding:14px}
+.li.opc .ord{font-family:var(--display);font-weight:800;color:var(--acc);min-width:20px}

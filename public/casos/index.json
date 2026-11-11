@@ -1,0 +1,11 @@
+{
+  "casos": [
+    {
+      "id": "caso-01",
+      "titulo": "Operação Galpão",
+      "materia": "penal",
+      "resumo": "Uma denúncia anônima sobre cocaína guardada para exportação. Cada decisão sua tem consequências e fundamento na lei.",
+      "arquivo": "casos/caso-01.json"
+    }
+  ]
+}

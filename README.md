@@ -1,6 +1,13 @@
 # Missão PF
 
-App de estudos para Agente da PF com ciclo de estudos, pomodoro, aulas e treino de TAF.
+App de estudos para Agente da PF. Inclui:
+
+- **Estudo:** ciclo de estudos com pomodoro e aulas.
+- **Questões:** questão do dia, simulados no estilo Cebraspe e caderno de erros.
+- **Revisão:** revisão espaçada, flashcards inteligentes e lei seca com lacunas.
+- **Prática:** discursiva, casos investigativos e TAF (com plano de treino e cronômetro).
+- **Lembretes:** no Android.
+- **Módulos opcionais:** desempenho, patentes e conquistas.
 
 Um mesmo código gera duas versões:
 
@@ -78,16 +85,26 @@ As aulas não ficam presas no APK. Para publicar uma aula nova:
 
 O GitHub Pages atualiza, e tanto o PC quanto o APK buscam as aulas de lá. Cada aula aberta fica guardada para uso offline. A cópia embutida no APK serve de reserva.
 
+## Casos investigativos novos
+
+1. Crie um `public/casos/<id>.json` no formato de `caso-01.json`, com nós e opções com pontuação, feedback e próximo nó.
+2. Adicione o caso em `public/casos/index.json`.
+
 ## Estrutura
 
 ```
 index.html            markup das telas
-src/main.js           lógica do app (ciclo, pomodoro, aulas, TAF, login)
+src/main.js           base do app: menu, ciclo, pomodoro, aulas, TAF, login e configurações
+src/quest.js          banco de itens, questão do dia, simulados e caderno de erros
+src/revisao.js        revisão espaçada, flashcards, lei seca e lembretes
+src/extras.js         desempenho, patentes, conquistas, plano e cronômetro do TAF e discursiva
+src/casos.js          motor dos casos investigativos
 src/sync.js           sincronização com o Supabase (offline-first, realtime)
 src/native.js         notificações, status bar e botão voltar no Android
 src/lessons.js        carregamento das aulas (remoto → embutido → cache)
 src/style.css         tema escuro
-public/aulas/         catálogo e aulas
+public/aulas/         catálogo e aulas (seções, flashcards, situacoes e banco de itens)
+public/casos/         casos investigativos
 supabase/schema.sql   tabela + RLS + realtime
 android/              projeto Android (Capacitor)
 ```
