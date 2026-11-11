@@ -72,7 +72,7 @@ main{max-width:1000px;margin:0 auto;padding:22px 18px 40px;display:grid;gap:18px
 .btn.sm{padding:5px 11px;font-size:14px;border-radius:8px}
 .btn.icon{padding:6px;width:34px;height:34px}
 .btn:disabled{opacity:.5;cursor:default}
-input[type=text],input[type=number],input[type=date],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-width:0}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-width:0}
 input[type=checkbox]{accent-color:var(--col);width:18px;height:18px;flex:none}
 label.f{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
 .form{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));align-items:end}
@@ -265,8 +265,21 @@ details.erro p{margin-top:8px}
 .toggle:last-child{border-bottom:0}
 .toggle .t{flex:1}
 .toggle .t small{display:block;color:var(--muted);font-size:13.5px}
-.sw{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .15s}
+input.sw{appearance:none;-webkit-appearance:none;width:44px;height:26px;margin:0;border-radius:99px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .15s}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
-.sw:checked{background:var(--ok)}
+input.sw:checked{background:var(--ok)}
 .sw:checked::after{left:21px}
 .estudada{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.big-fc{min-height:260px;padding:24px;font-size:18px}
+.big-fc .front{font-size:22px}
+.big-fc .back{font-size:18px}
+.fc.on .fc-hint{display:none}
+.fc-ans .btn{padding:14px;font-size:16px}
+.lacunas{display:grid;gap:10px}
+.lei-art{background:var(--surface);border-left:3px solid var(--line);border-radius:0 10px 10px 0;padding:10px 12px;display:grid;gap:8px}
+.lei-art.miss{border-left-color:var(--bad)}
+.lei-art p b{color:var(--teo);font-family:var(--display)}
+.gap{display:inline;font:inherit;border:0;border-bottom:2px dashed var(--lib);background:color-mix(in srgb,var(--lib) 10%,transparent);color:var(--lib);border-radius:4px;padding:0 4px;cursor:pointer;letter-spacing:.05em}
+.gap.on{border-bottom-style:solid;letter-spacing:normal;font-weight:700;background:none}
+input[type=time]{color-scheme:dark}

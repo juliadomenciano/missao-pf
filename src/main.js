@@ -2,6 +2,7 @@ import './style.css';
 import { start as startSync, markDirty, configured, currentUser, signIn, signUp, signOut, pull } from './sync.js';
 import { setupNative, askPermission, scheduleAlert, cancelAlert, isNative } from './native.js';
 import { getLessonText } from './lessons.js';
+import { initRevisao, applyReminders } from './revisao.js';
 import { initQuest, renderQdia, renderSimulados, renderErros, lessonAnswered, aulaEstudada } from './quest.js';
 
 const MAT=[
@@ -58,7 +59,7 @@ const S={};
 const docs={};
 function getDoc(name){
   if(S[name])return S[name];
-  const base=name.startsWith('log-')?{d:{}}:clone(DEF[name]);
+  const base=name.startsWith('log-')?{d:{}}:clone(DEF[name]||{});
   const c=local.get(name);
   S[name]=c?merge(base,c):base;
   return S[name];
@@ -86,7 +87,7 @@ function setSync(st){
 }
 function applyRemote(name,data){
   if(name===null){renderAll();return}
-  const base=name.startsWith('log-')?{d:{}}:clone(DEF[name]);
+  const base=name.startsWith('log-')?{d:{}}:clone(DEF[name]||{});
   S[name]=merge(base,clone(data||{}));
   local.set(name,S[name]);
 }
@@ -462,8 +463,9 @@ const NAV=[
 const EXT={};
 const TITLES={login:'Entrar'};
 NAV.forEach(([,l])=>l.forEach(([id,n])=>TITLES[id]=n));
-const BASE_VIEWS=['hoje','pomodoro','estudos','aulas','taf','login','qdia','simulados','erros','config'];
-function viewOk(id){return BASE_VIEWS.includes(id)||!!EXT[id]}
+const BASE_VIEWS_=['hoje','pomodoro','estudos','aulas','taf','login','qdia','simulados','erros','config'];
+const BASE_VIEWS=BASE_VIEWS_;
+function viewOk(id){return BASE_VIEWS.includes(id)||(!!EXT[id]&&!['counts','hoje','config','patente','taf'].includes(id))}
 function modOn(k){const m=getDoc('cfg').mod||{};return m[k]!==false}
 function navCounts(){const q=getDoc('quest');const n={erros:Object.keys(q.erros||{}).length};if(EXT.counts)Object.assign(n,EXT.counts());const qd=q.qdia;if(!qd||qd.d!==dkey()||Object.keys(qd.resp||{}).length<qd.ids.length)n.qdia='•';return n}
 function renderNav(){
@@ -548,6 +550,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();re
   await startSync({read:n=>S[n]??local.get(n),apply:applyRemote,status:setSync});
   route();
   setInterval(tick,250);
+  if(isNative)applyReminders();
 })();
 
 function needLogin(){return configured()&&!currentUser()&&!local.get('semConta')}
@@ -635,5 +638,6 @@ function renderConfig(){
 function aulaMateria(id){const a=(catalog||[]).find(x=>x.id===id);return a?a.materia:'const'}
 const listeners=[];
 function onEvent(type,data){listeners.forEach(f=>{try{f(type,data)}catch(e){console.warn(e)}})}
-export const ctx={S,getDoc,save,local,$,esc,clone,pad,dkey,parseKey,addDays,weekStart,fmtDate,fmtH,fmtClock,fmtClockH,toast,uid,MM,MAT,PROVAS,PM,go,renderAll,renderNav,loadCatalog,fetchAula,aulaMateria,minutesOn,streak,bestMark,fmtMark,marksOf,addMarca:(p,v,d)=>{getDoc('taf').marcas.push({id:uid(),p,v,d:d||dkey()});save('taf');renderAll()},beep,unlockAudio,isNative,EXT,modOn,onEvent,listen:f=>listeners.push(f),logMonths};
+export const ctx={S,getDoc,save,local,$,esc,clone,pad,dkey,parseKey,addDays,weekStart,fmtDate,fmtH,fmtClock,fmtClockH,toast,uid,MM,MAT,PROVAS,PM,go,renderAll,renderNav,loadCatalog,fetchAula,aulaMateria,minutesOn,streak,bestMark,fmtMark,marksOf,addMarca:(p,v,d)=>{getDoc('taf').marcas.push({id:uid(),p,v,d:d||dkey()});save('taf');renderAll()},beep,unlockAudio,isNative,EXT,modOn,onEvent,listen:f=>listeners.push(f),logMonths,registerDoc:(n,d)=>{DEF[n]=d}};
 initQuest(ctx);
+initRevisao(ctx);

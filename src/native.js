@@ -16,13 +16,14 @@ export async function setupNative(onBack) {
     await StatusBar.setOverlaysWebView({ overlay: false });
   } catch (e) {}
   try {
+    await LocalNotifications.createChannel({ id: 'lembretes', name: 'Lembretes', description: 'Lembretes de estudo, revisão e treino', importance: 4, vibration: true, visibility: 1 });
     await LocalNotifications.createChannel({ id: 'pomodoro', name: 'Pomodoro', description: 'Fim das etapas do pomodoro', importance: 5, vibration: true, visibility: 1 });
   } catch (e) {}
   App.addListener('backButton', () => onBack(() => App.exitApp()));
 }
 
-export async function askPermission() {
-  if (ready) return;
+export async function askPermission(force) {
+  if (ready && !force) return;
   ready = true;
   try {
     if (isNative) {
@@ -55,4 +56,16 @@ export async function cancelAlert() {
   if (isNative) {
     try { await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID }] }); } catch (e) {}
   }
+}
+
+const REMINDER_IDS = [101, 102, 103, 110, 111, 112, 113, 114, 115, 116];
+
+export async function setReminders(list) {
+  if (!isNative) return false;
+  try {
+    await LocalNotifications.cancel({ notifications: REMINDER_IDS.map((id) => ({ id })) });
+    if (!list.length) return true;
+    await LocalNotifications.schedule({ notifications: list.map((n) => ({ id: n.id, title: n.title, body: n.body, channelId: 'lembretes', schedule: { on: n.on, allowWhileIdle: true } })) });
+    return true;
+  } catch (e) { console.warn('lembretes', e); return false; }
 }
