@@ -24,10 +24,6 @@ jobs:
       - run: npm ci
 
       - name: Build web + sync Android
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_AULAS_URL: ${{ vars.VITE_AULAS_URL }}
         run: npm run build:android
 
       - name: Restaurar keystore

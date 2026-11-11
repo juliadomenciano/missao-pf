@@ -39,12 +39,8 @@ Preencha o `.env` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Para desen
 
 1. Crie um repositório chamado `missao-pf`. Ele pode ser privado, mas o GitHub Pages em repositório privado exige um plano pago. Se o seu plano for grátis, deixe o repositório público. A chave anon do Supabase é pública por natureza, porque quem protege os dados é o RLS.
 2. Em **Settings > Secrets and variables > Actions**, crie:
-   - **Secrets:**
-     - `VITE_SUPABASE_URL`;
-     - `VITE_SUPABASE_ANON_KEY`;
-     - `ANDROID_KEYSTORE_B64` e `ANDROID_KEYSTORE_PASSWORD`, conforme o passo 4.
-   - **Variables:**
-     - `VITE_AULAS_URL` = `https://SEU-USUARIO.github.io/missao-pf`.
+   - **Secrets:** `ANDROID_KEYSTORE_B64` e `ANDROID_KEYSTORE_PASSWORD`, conforme o passo 4.
+   - A URL do Supabase, a chave publishable e a URL das aulas ficam em `.env.production`. Esses valores são públicos por natureza.
 3. Em **Settings > Pages**, escolha **Source: GitHub Actions**.
 4. Faça o push para `main`. Dois workflows rodam:
    - **PWA no GitHub Pages** publica o site;
