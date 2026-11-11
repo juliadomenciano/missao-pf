@@ -2,6 +2,7 @@ import './style.css';
 import { start as startSync, markDirty, configured, currentUser, signIn, signUp, signOut, pull } from './sync.js';
 import { setupNative, askPermission, scheduleAlert, cancelAlert, isNative } from './native.js';
 import { getLessonText } from './lessons.js';
+import { initQuest, renderQdia, renderSimulados, renderErros, lessonAnswered, aulaEstudada } from './quest.js';
 
 const MAT=[
  {id:'port',n:'Português',b:1,c:'#6aa7ff'},
@@ -28,10 +29,11 @@ const PROVAS=[
 const PM=Object.fromEntries(PROVAS.map(p=>[p.id,p]));
 const TREINOS=['Corrida','Natação','Barra e força de costas','Impulsão e pliometria','Musculação','Mobilidade','Outro'];
 const DEF={
- cfg:{pomo:{foco:25,pausa:5,longa:15,ciclos:4,som:true,auto:false},meta:18,prova:'',ciclo:[],volta:{n:1,feito:{}}},
+ cfg:{pomo:{foco:25,pausa:5,longa:15,ciclos:4,som:true,auto:false},meta:18,prova:'',ciclo:[],volta:{n:1,feito:{}},mod:{painel:true,patentes:true,conquistas:true},qdia:{n:5,todas:false}},
  tarefas:{lista:[]},
  aulas:{p:{}},
- taf:{marcas:[],treinos:[]}
+ taf:{marcas:[],treinos:[]},
+ quest:{hist:{},erros:{},qdia:null,sims:[]}
 };
 
 const $=s=>document.querySelector(s);
@@ -43,6 +45,7 @@ const parseKey=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const mkey=k=>'log-'+k.slice(0,7);
 const fmtH=min=>{min=Math.round(min);const h=Math.floor(min/60),m=min%60;return h?(h+'h'+(m?pad(m):'')):(m+' min')};
+const fmtClockH=ms=>{const s=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(s/3600);return (h?h+':':'')+pad(Math.floor(s%3600/60))+':'+pad(s%60)};
 const fmtClock=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return pad(Math.floor(s/60))+':'+pad(s%60)};
 const fmtDate=k=>{const d=parseKey(k);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}).replace('.','')};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -230,6 +233,7 @@ function renderHoje(){
   else prova=`<div class="stat"><span class="k">Prova</span><span class="v" style="font-size:17px">Sem edital</span><span class="small muted">Defina a data no Ciclo</span></div>`;
   $('#hojeStats').innerHTML=`<div class="stat"><span class="k">Hoje</span><span class="v">${fmtH(hoje)}</span></div><div class="stat"><span class="k">Dias seguidos</span><span class="v">${st}</span></div><div class="stat"><span class="k">Volta do ciclo</span><span class="v">${c.ciclo.length?c.volta.n:'–'}</span></div>${prova}`;
   renderMatBars('#hojeMat',w.byM);
+  renderHojeExtra();
   renderTaskList('#hojeTasks','hoje');
   $('#hojeTaf').innerHTML=PROVAS.map(p=>{const b=bestMark(p.id);if(b==null)return `<span class="pill">${p.n}: sem teste</span>`;const ok=p.dir>0?b>=p.meta:b<=p.meta;return `<span class="pill ${ok?'ok':'warn'}">${ok?'✓':'•'} ${p.n}: ${fmtMark(p,b)}</span>`}).join('');
 }
@@ -342,7 +346,7 @@ async function showAula(id){
       <h1>${esc(a.titulo)}</h1>
       <p class="muted">${esc(a.resumo||'')}</p>
       <div class="row small">${a.edital?`<span class="pill">Edital: ${esc(a.edital)}</span>`:''}${a.tempo?`<span class="pill">Tempo sugerido: ${esc(a.tempo)}</span>`:''}<button class="btn sm" type="button" id="aulaTimer" style="border-color:${m.c}">Estudar com pomodoro</button></div>
-      <div class="card"><div class="row between small"><b>Seu progresso nesta aula</b><span class="muted num" id="ckTxt"></span></div><div class="bar" style="--c:${m.c}"><i id="ckBar"></i></div><div class="checks" id="ckBox">${A.data.checks.map((c,i)=>`<label><input type="checkbox" data-i="${i}" ${p.ck[i]?'checked':''}> ${esc(c)}</label>`).join('')}</div></div>
+      <div class="card"><div class="row between small"><b>Seu progresso nesta aula</b><span class="muted num" id="ckTxt"></span></div><div class="bar" style="--c:${m.c}"><i id="ckBar"></i></div><div class="checks" id="ckBox">${A.data.checks.map((c,i)=>`<label><input type="checkbox" data-i="${i}" ${p.ck[i]?'checked':''}> ${esc(c)}</label>`).join('')}</div><div class="estudada" id="estBox"></div></div>
     </div>
     <nav class="secnav" aria-label="Seções da aula">${secNames.map((n,i)=>`<button type="button" data-s="s${i}">${esc(n)}</button>`).join('')}<button type="button" data-s="sfc">Flashcards</button><button type="button" data-s="sq">Questões</button></nav>
     <div id="secs"></div>
@@ -358,8 +362,11 @@ async function showAula(id){
   v.querySelectorAll('.secnav button').forEach(b=>b.onclick=()=>{const t=v.querySelector('#'+b.dataset.s);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})});
   const nck=A.data.checks.length;
   const updCk=()=>{const n=p.ck.filter(Boolean).length;v.querySelector('#ckTxt').textContent=`${n} de ${nck}`;v.querySelector('#ckBar').style.width=(n/nck*100)+'%'};
-  v.querySelectorAll('#ckBox input').forEach(inp=>inp.onchange=()=>{p.ck[+inp.dataset.i]=inp.checked;for(let i=0;i<nck;i++)p.ck[i]=!!p.ck[i];save('aulas');updCk()});
-  updCk();
+  const updEst=()=>{const eb=v.querySelector('#estBox');eb.innerHTML=p.estudada?`<span class="pill ok">✓ Estudada em ${fmtDate(p.estudada)}</span><button class="btn sm ghost" type="button" id="estOff">Desmarcar</button>`:`<button class="btn sm primary" type="button" id="estOn">Marcar como estudada</button><span class="small muted">Libera a aula para a questão do dia, os simulados "só do que estudei" e as revisões.</span>`;
+    const on=eb.querySelector('#estOn');if(on)on.onclick=()=>{p.estudada=dkey();save('aulas');updEst();onEvent('estudada',a.id);toast('Aula marcada como estudada.')};
+    const off=eb.querySelector('#estOff');if(off)off.onclick=()=>{delete p.estudada;save('aulas');updEst()}};
+  v.querySelectorAll('#ckBox input').forEach(inp=>inp.onchange=()=>{p.ck[+inp.dataset.i]=inp.checked;for(let i=0;i<nck;i++)p.ck[i]=!!p.ck[i];if(!p.estudada&&p.ck.filter(Boolean).length===nck){p.estudada=dkey();onEvent('estudada',a.id);toast('Todas as etapas feitas: aula marcada como estudada.')}save('aulas');updCk();updEst()});
+  updCk();updEst();
   const cards=A.data.flashcards;const fg=v.querySelector('#fcGrid');
   const renderFc=l=>{fg.innerHTML='';l.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='fc';b.setAttribute('aria-pressed','false');b.innerHTML=`<span class="fk">${c.k}</span><span class="front">${c.f}</span><span class="back">${c.b}</span>`;b.onclick=()=>{b.classList.toggle('on');b.setAttribute('aria-pressed',b.classList.contains('on'))};fg.appendChild(b)})};
   renderFc(cards);
@@ -376,7 +383,7 @@ async function showAula(id){
       d.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(p.q[id]&&p.q[id].done)return;p.q[id]={v:b.dataset.v,done:false};paint(d,id,it);save('aulas')});
       box.appendChild(d)});
     const foot=document.createElement('div');foot.className='item';const btn=document.createElement('button');btn.type='button';btn.className='btn primary';btn.style.cssText='justify-self:start;background:var(--q);border-color:var(--q);color:#16101f';btn.textContent=`Corrigir situação ${si+1}`;
-    btn.onclick=()=>{s.itens.forEach((it,ii)=>{const id=si+'-'+ii;const v0=(p.q[id]&&p.q[id].v)||'B';p.q[id]={v:v0,done:true,r:v0==='B'?'bl':(v0===it.g?'ok':'bad'),em:dkey()}});save('aulas');refresh()};
+    btn.onclick=()=>{s.itens.forEach((it,ii)=>{const id=si+'-'+ii;const v0=(p.q[id]&&p.q[id].v)||'B';p.q[id]={v:v0,done:true,r:v0==='B'?'bl':(v0===it.g?'ok':'bad'),em:dkey()};lessonAnswered(a.id,id,v0,it.g)});save('aulas');refresh()};
     foot.appendChild(btn);box.appendChild(foot);sitsEl.appendChild(box);
   });
   v.querySelector('#qReset').onclick=()=>{p.q={};save('aulas');refresh()};
@@ -427,19 +434,58 @@ function renderTodayLog(){
   $('#todayLog').querySelectorAll('.li').forEach(li=>li.querySelector('.x').onclick=()=>{removeMinutes(li.dataset.m,+li.dataset.v,k);toast('Registro de hoje removido.')});
 }
 
-const VIEWS=['hoje','pomodoro','estudos','aulas','taf','login'];
+const IC={
+ home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>',
+ cycle:'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',
+ book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ check:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
+ x:'<path d="M4 4h16v16H4z"/><path d="M9 9l6 6M15 9l-6 6"/>',
+ rev:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/>',
+ cards:'<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',
+ law:'<path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z"/>',
+ pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ case:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+ gym:'<path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/>',
+ chart:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+ medal:'<circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 3h4l2 4 2-4h4l-2.5 6.5"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
+};
+const NAV=[
+ ['Estudo',[['hoje','Hoje','home'],['pomodoro','Pomodoro','timer'],['estudos','Ciclo e tarefas','cycle'],['aulas','Aulas','book']]],
+ ['Questões',[['qdia','Questão do dia','sun'],['simulados','Simulados','check'],['erros','Caderno de erros','x']]],
+ ['Revisão',[['revisao','Revisar hoje','rev'],['flash','Flashcards','cards'],['lei','Lei seca','law']]],
+ ['Prática',[['discursiva','Discursiva','pen'],['casos','Casos investigativos','case'],['taf','TAF','gym']]],
+ ['Você',[['painel','Desempenho','chart','painel'],['conquistas','Conquistas','medal','conquistas'],['config','Configurações','gear']]]
+];
+const EXT={};
+const TITLES={login:'Entrar'};
+NAV.forEach(([,l])=>l.forEach(([id,n])=>TITLES[id]=n));
+const BASE_VIEWS=['hoje','pomodoro','estudos','aulas','taf','login','qdia','simulados','erros','config'];
+function viewOk(id){return BASE_VIEWS.includes(id)||!!EXT[id]}
+function modOn(k){const m=getDoc('cfg').mod||{};return m[k]!==false}
+function navCounts(){const q=getDoc('quest');const n={erros:Object.keys(q.erros||{}).length};if(EXT.counts)Object.assign(n,EXT.counts());const qd=q.qdia;if(!qd||qd.d!==dkey()||Object.keys(qd.resp||{}).length<qd.ids.length)n.qdia='•';return n}
+function renderNav(){
+  const cnt=navCounts();
+  $('#tabs').innerHTML=NAV.map(([g,l])=>{const items=l.filter(([id,,,mod])=>viewOk(id)&&(!mod||modOn(mod)));if(!items.length)return '';return `<div class="grp">${g}</div>`+items.map(([id,n,ic])=>`<button type="button" data-v="${id}"${id===cur?' aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[ic]}</svg>${esc(n)}${cnt[id]?`<span class="cnt${cnt[id]==='•'||cnt[id]>0?' hot':''}">${cnt[id]}</span>`:''}</button>`).join('')}).join('');
+  $('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{go(b.dataset.v);closeDrawer()});
+  const sub=EXT.patente&&modOn('patentes')?EXT.patente():null;$('#dSub').textContent=sub||'Agente da Polícia Federal';
+}
+function openDrawer(){$('#drawer').classList.add('open');$('#scrim').classList.add('on');$('#menuBtn').setAttribute('aria-expanded','true')}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('on');$('#menuBtn').setAttribute('aria-expanded','false')}
 let cur='hoje';
-function go(v){location.hash=v}
+function go(v){if(location.hash.replace('#','')===v)route();else location.hash=v}
 function route(){
   let h=location.hash.replace('#','')||'hoje';
   if(needLogin())h='login';
   let aula=null;if(h.startsWith('aula-')){aula=h.slice(5);h='aulas'}
-  if(!VIEWS.includes(h))h='hoje';
+  if(!viewOk(h))h='hoje';
   const changed=cur!==h;cur=h;
-  VIEWS.forEach(v=>$('#v-'+v).classList.toggle('on',v===h));
-  document.querySelectorAll('#tabs button').forEach(b=>b.toggleAttribute('aria-current',false));
-  $('#tabs').hidden=h==='login';
-  const tb=document.querySelector(`#tabs button[data-v="${h}"]`);if(tb)tb.setAttribute('aria-current','page');
+  document.querySelectorAll('main > .view').forEach(s=>s.classList.toggle('on',s.id==='v-'+h));
+  document.body.classList.toggle('nodrawer',h==='login');
+  $('#topTitle').textContent=TITLES[h]||'Missão PF';
+  renderNav();
   if(h==='aulas'){if(aula)showAula(aula);else{openAula=null;$('#aulaView').hidden=true;$('#aulaView').innerHTML='';$('#aulasCat').hidden=false;renderAulas()}}
   renderView(h);
   if(changed&&!aula)window.scrollTo(0,0);
@@ -448,13 +494,20 @@ function renderView(h){
   if(h==='hoje')renderHoje();
   else if(h==='pomodoro'){renderPomo();renderTodayLog()}
   else if(h==='estudos')renderEstudos();
-  else if(h==='taf')renderTaf();
+  else if(h==='taf'){renderTaf();if(EXT.taf)EXT.taf()}
   else if(h==='login')renderLogin();
   else if(h==='aulas'&&!openAula&&catalog)renderAulas();
+  else if(h==='qdia')renderQdia($('#v-qdia'));
+  else if(h==='simulados')renderSimulados($('#v-simulados'));
+  else if(h==='erros')renderErros($('#v-erros'));
+  else if(h==='config')renderConfig();
+  else if(EXT[h])EXT[h]($('#v-'+h));
 }
-function renderAll(){renderView(cur);if(cur!=='pomodoro')tick()}
+const STATIC_RENDER=new Set(['hoje','pomodoro','estudos','taf','config','login']);
+function renderAll(){if(STATIC_RENDER.has(cur)||cur==='aulas')renderView(cur);renderNav();if(cur!=='pomodoro')tick()}
 
-document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+$('#menuBtn').onclick=()=>$('#drawer').classList.contains('open')?closeDrawer():openDrawer();
+$('#scrim').onclick=closeDrawer;
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
 $('#miniTimer').onclick=()=>go('pomodoro');
 $('#pStart').onclick=()=>{T.rodando?pauseT():startT()};
@@ -479,7 +532,7 @@ window.addEventListener('hashchange',route);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();renderAll()}});
 
 (async function init(){
-  ['cfg','tarefas','aulas','taf'].forEach(getDoc);logMonths().forEach(getDoc);
+  ['cfg','tarefas','aulas','taf','quest'].forEach(getDoc);logMonths().forEach(getDoc);
   $('#manMat').innerHTML=matOpts((cycleState().next||{}).m||'const');
   $('#manData').value=dkey();$('#tData').value=dkey();$('#mData').value=dkey();$('#trData').value=dkey();
   $('#mProva').innerHTML=PROVAS.map(p=>`<option value="${p.id}">${p.n}</option>`).join('');$('#mProva').onchange();
@@ -487,7 +540,8 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();re
   if(T.rodando&&Date.now()>=T.fim)completePhase(false);else if(T.rodando)armAlert();
   setupNative(exit=>{
     const h=location.hash.replace('#','');
-    if(h.startsWith('aula-'))go('aulas');
+    if($('#drawer').classList.contains('open'))closeDrawer();
+    else if(h.startsWith('aula-'))go('aulas');
     else if(h&&h!=='hoje'&&h!=='login')go('hoje');
     else exit();
   });
@@ -557,3 +611,29 @@ $('#bkCopy').onclick=async()=>{
 };
 $('#bkLoad').onclick=()=>{const t=$('#bkTxt');if(t.hidden){t.hidden=false;t.value='';t.placeholder='Cole aqui o backup e toque em Restaurar de novo';t.focus();return}
   try{const d=JSON.parse(t.value);if(!d||!d.docs)throw 0;for(const n in d.docs){const base=n.startsWith('log-')?{d:{}}:clone(DEF[n]||{});S[n]=merge(base,d.docs[n]);save(n)}t.hidden=true;renderAll();toast('Backup restaurado.')}catch(e){toast('Esse texto não é um backup válido.')}};
+
+function renderHojeExtra(){
+  const el=$('#hojeExtra');if(!el)return;
+  const q=getDoc('quest');const qd=q.qdia;const hoje=dkey();
+  const feitos=qd&&qd.d===hoje?Object.keys(qd.resp||{}).length:0,tot=qd&&qd.d===hoje?qd.ids.length:(getDoc('cfg').qdia||{}).n||5;
+  const nErr=Object.keys(q.erros||{}).length;
+  let html=`<div class="card accent" style="--c:var(--lib)"><span class="k">Questão do dia</span><h2>${feitos>=tot&&qd&&qd.d===hoje?'Feita ✓':feitos?`${feitos} de ${tot} respondidas`:`${tot} itens esperando você`}</h2><div class="row"><button class="btn sm" type="button" data-go="qdia">${feitos>=tot&&qd&&qd.d===hoje?'Ver':'Responder'}</button>${nErr?`<button class="btn sm ghost" type="button" data-go="erros">Caderno de erros (${nErr})</button>`:''}</div></div>`;
+  if(EXT.hoje)html+=EXT.hoje();
+  el.innerHTML=html;
+}
+function renderConfig(){
+  const c=getDoc('cfg');c.mod=c.mod||{};c.qdia=c.qdia||{n:5,todas:false};
+  const mods=[['painel','Painel de desempenho','Gráficos de horas, acertos por matéria e evolução nos simulados.'],['patentes','Patentes','Você sobe de nível com horas, acertos e simulados.'],['conquistas','Conquistas','Medalhas por marcos do seu estudo e do TAF.']];
+  $('#cfgMods').innerHTML=mods.map(([k,n,d])=>`<label class="toggle"><span class="t">${n}<small>${d}</small></span><input class="sw" type="checkbox" data-k="${k}" ${c.mod[k]!==false?'checked':''}></label>`).join('');
+  $('#cfgMods').querySelectorAll('input').forEach(i=>i.onchange=()=>{c.mod[i.dataset.k]=i.checked;save('cfg');renderNav()});
+  $('#cfgQdia').innerHTML=`<label class="f">Itens por dia<input type="number" id="cqN" min="3" max="20" value="${c.qdia.n}"></label><label class="toggle"><span class="t">Incluir aulas ainda não estudadas<small>Desligado: a questão do dia só usa as aulas marcadas como estudadas.</small></span><input class="sw" type="checkbox" id="cqT" ${c.qdia.todas?'checked':''}></label>`;
+  $('#cqN').onchange=e=>{c.qdia.n=Math.max(3,Math.min(20,+e.target.value||5));const q=getDoc('quest');if(q.qdia&&q.qdia.d===dkey()&&!Object.keys(q.qdia.resp||{}).length){q.qdia=null;save('quest')}save('cfg')};
+  $('#cqT').onchange=e=>{c.qdia.todas=e.target.checked;const q=getDoc('quest');if(q.qdia&&q.qdia.d===dkey()&&!Object.keys(q.qdia.resp||{}).length){q.qdia=null;save('quest')}save('cfg')};
+  if(EXT.config)EXT.config();
+  renderConta();
+}
+function aulaMateria(id){const a=(catalog||[]).find(x=>x.id===id);return a?a.materia:'const'}
+const listeners=[];
+function onEvent(type,data){listeners.forEach(f=>{try{f(type,data)}catch(e){console.warn(e)}})}
+export const ctx={S,getDoc,save,local,$,esc,clone,pad,dkey,parseKey,addDays,weekStart,fmtDate,fmtH,fmtClock,fmtClockH,toast,uid,MM,MAT,PROVAS,PM,go,renderAll,renderNav,loadCatalog,fetchAula,aulaMateria,minutesOn,streak,bestMark,fmtMark,marksOf,addMarca:(p,v,d)=>{getDoc('taf').marcas.push({id:uid(),p,v,d:d||dkey()});save('taf');renderAll()},beep,unlockAudio,isNative,EXT,modOn,onEvent,listen:f=>listeners.push(f),logMonths};
+initQuest(ctx);

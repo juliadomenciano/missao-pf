@@ -13,20 +13,18 @@
 </head>
 <body>
 <header class="top"><div class="in">
-  <div class="brand"><i></i>Missão PF</div>
-  <span class="sync" id="sync" title="Onde seus dados estão salvos">carregando…</span>
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <span class="top-title" id="topTitle">Missão PF</span>
   <button class="mini-timer" id="miniTimer" type="button" aria-label="Abrir pomodoro"><i></i><span></span></button>
-  <nav class="tabs" id="tabs" aria-label="Seções do app">
-    <button type="button" data-v="hoje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Hoje</button>
-    <button type="button" data-v="pomodoro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Pomodoro</button>
-    <button type="button" data-v="estudos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Ciclo</button>
-    <button type="button" data-v="aulas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Aulas</button>
-    <button type="button" data-v="taf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/></svg>TAF</button>
-  </nav>
+  <span class="sync" id="sync" title="Onde seus dados estão salvos">carregando…</span>
 </div></header>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Menu">
+  <div class="dhead"><img src="icons/icon-192.png" alt=""><div><b>Missão PF</b><span id="dSub">Agente da Polícia Federal</span></div></div>
+  <nav class="dnav" id="tabs" aria-label="Seções do app"></nav>
+</aside>
 
 <main>
-  <!-- HOJE -->
   <section class="view" id="v-hoje" aria-labelledby="h-hoje">
     <div class="vhead"><span class="k" id="hojeData"></span><h1 id="h-hoje">Bom estudo, Maju</h1></div>
     <div class="cols2">
@@ -38,6 +36,7 @@
       </div>
     </div>
     <div class="stats" id="hojeStats"></div>
+    <div class="cols" id="hojeExtra"></div>
     <div class="cols">
       <div class="card">
         <div class="row between"><h2>Tarefas de hoje</h2><button class="btn sm ghost" type="button" data-go="estudos">Ver todas</button></div>
@@ -54,8 +53,6 @@
       <div class="row" id="hojeTaf"></div>
     </div>
   </section>
-
-  <!-- POMODORO -->
   <section class="view" id="v-pomodoro" aria-labelledby="h-pomo">
     <div class="vhead"><h1 id="h-pomo">Pomodoro</h1><p class="muted">O tempo de foco concluído entra automaticamente nas horas da matéria e no ciclo.</p></div>
     <div class="card pomo" id="pomoCard">
@@ -96,8 +93,6 @@
       </div>
     </div>
   </section>
-
-  <!-- CICLO / ORGANIZAÇÃO -->
   <section class="view" id="v-estudos" aria-labelledby="h-est">
     <div class="vhead"><h1 id="h-est">Ciclo de estudos e organização</h1><p class="muted">No ciclo, as matérias rodam em fila. Se perder um dia, nada fica atrasado: você continua de onde parou.</p></div>
     <div class="cols2">
@@ -119,12 +114,6 @@
         <h2 style="margin-top:6px">Histórico</h2>
         <div class="stats" id="histStats"></div>
       </div>
-      <div class="card">
-        <h2>Conta e backup</h2>
-        <div id="contaBox"></div>
-        <div class="row"><button class="btn sm" type="button" id="bkCopy">Copiar backup</button><button class="btn sm ghost" type="button" id="bkLoad">Restaurar backup</button></div>
-        <textarea id="bkTxt" rows="4" hidden aria-label="Texto do backup"></textarea>
-      </div>
     </div>
     <div class="card">
       <div class="row between"><h2>Tarefas</h2><div class="seg" id="taskFilter"><button type="button" data-f="abertas" aria-pressed="true">Abertas</button><button type="button" data-f="feitas" aria-pressed="false">Feitas</button><button type="button" data-f="todas" aria-pressed="false">Todas</button></div></div>
@@ -137,8 +126,6 @@
       <div class="list" id="taskList"></div>
     </div>
   </section>
-
-  <!-- AULAS -->
   <section class="view" id="v-aulas" aria-labelledby="h-aulas">
     <div id="aulasCat">
       <div class="vhead" style="margin-bottom:16px"><h1 id="h-aulas">Aulas</h1><p class="muted">Cada aula é carregada só quando você abre, para o app continuar leve no celular.</p></div>
@@ -148,10 +135,32 @@
     <div id="aulaView" hidden></div>
   </section>
 
-  <!-- LOGIN -->
+  <section class="view" id="v-qdia" aria-label="Questão do dia"></section>
+  <section class="view" id="v-simulados" aria-label="Simulados"></section>
+  <section class="view" id="v-erros" aria-label="Caderno de erros"></section>
+  <section class="view" id="v-revisao" aria-label="Revisar hoje"></section>
+  <section class="view" id="v-flash" aria-label="Flashcards"></section>
+  <section class="view" id="v-lei" aria-label="Lei seca"></section>
+  <section class="view" id="v-discursiva" aria-label="Discursiva"></section>
+  <section class="view" id="v-casos" aria-label="Casos investigativos"></section>
+  <section class="view" id="v-painel" aria-label="Desempenho"></section>
+  <section class="view" id="v-conquistas" aria-label="Conquistas"></section>
+  <section class="view" id="v-config" aria-label="Configurações">
+    <div class="vhead"><h1>Configurações</h1></div>
+    <div class="cols">
+      <div class="card"><h2>Módulos opcionais</h2><div id="cfgMods"></div></div>
+      <div class="card"><h2>Questão do dia</h2><div id="cfgQdia"></div></div>
+      <div class="card" id="cfgRevCard" hidden><h2>Revisão espaçada</h2><div id="cfgRev"></div></div>
+      <div class="card" id="cfgLembCard" hidden><h2>Lembretes</h2><div id="cfgLemb"></div></div>
+      <div class="card">
+        <h2>Conta e backup</h2>
+        <div id="contaBox"></div>
+        <div class="row"><button class="btn sm" type="button" id="bkCopy">Copiar backup</button><button class="btn sm ghost" type="button" id="bkLoad">Restaurar backup</button></div>
+        <textarea id="bkTxt" rows="4" hidden aria-label="Texto do backup"></textarea>
+      </div>
+    </div>
+  </section>
   <section class="view" id="v-login" aria-label="Entrar"></section>
-
-  <!-- TAF -->
   <section class="view" id="v-taf" aria-labelledby="h-taf">
     <div class="vhead"><h1 id="h-taf">Treino para o TAF</h1><p class="muted">Índices femininos do edital de 2025. Confira no próximo edital, porque eles podem mudar.</p></div>
     <div class="taf" id="tafCards"></div>
