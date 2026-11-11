@@ -9,16 +9,20 @@
       "edital": "Constitucional, item 1",
       "tempo": "2h de teoria + 40 min de questões",
       "arquivo": "aulas/dc-01.html",
-      "itens": 52
+      "itens": 52,
+      "etapas": 6
     },
     {
       "id": "dc-02",
       "materia": "const",
       "numero": 2,
       "titulo": "Propriedade e garantias penais e processuais",
-      "resumo": "Art. 5º, incisos XXII a LXVII.",
+      "resumo": "Art. 5º, incisos XXII a LXVII: propriedade, júri, crimes inafiançáveis, penas, extradição, provas e prisão.",
       "edital": "Constitucional, item 1",
-      "embreve": true
+      "tempo": "2h30 de teoria + 50 min de questões",
+      "arquivo": "aulas/dc-02.html",
+      "itens": 55,
+      "etapas": 8
     },
     {
       "id": "dc-03",

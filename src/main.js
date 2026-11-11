@@ -320,7 +320,7 @@ async function renderAulas(){
   $('#aulaFilter').innerHTML=[`<button type="button" data-f="todas" aria-pressed="${aulaFiltro==='todas'}">Todas</button>`,...mats.map(m=>`<button type="button" data-f="${m}" aria-pressed="${aulaFiltro===m}">${esc(MM[m]?.n||m)}</button>`)].join('');
   $('#aulaFilter').querySelectorAll('button').forEach(b=>b.onclick=()=>{aulaFiltro=b.dataset.f;renderAulas()});
   const show=list.filter(a=>aulaFiltro==='todas'||a.materia===aulaFiltro);
-  $('#aulaList').innerHTML=show.length?show.map(a=>{const m=MM[a.materia]||{n:a.materia,c:'#888'};const p=aulaProg(a.id);const nck=6;
+  $('#aulaList').innerHTML=show.length?show.map(a=>{const m=MM[a.materia]||{n:a.materia,c:'#888'};const p=aulaProg(a.id);const nck=a.etapas||6;
     return `<button type="button" class="lcard${a.embreve?' soon':''}" style="--c:${m.c}" data-id="${a.id}" ${a.embreve?'aria-disabled="true"':''}><span class="tag">${esc(m.n)} · Aula ${a.numero}</span><h3>${esc(a.titulo)}</h3><p class="muted small">${esc(a.resumo||'')}</p>${a.embreve?'<span class="pill">Em breve</span>':`<div class="row small"><span class="pill ${p.ck>=nck?'ok':''}">${p.ck>=nck?'✓ Concluída':p.ck+' de '+nck+' etapas'}</span>${p.done?`<span class="pill num">Questões: ${p.ok}✓ ${p.bad}✗ · líquido ${p.ok-p.bad}</span>`:''}</div>`}</button>`}).join(''):'<p class="empty">Nenhuma aula nesta matéria ainda.</p>';
   $('#aulaList').querySelectorAll('.lcard:not(.soon)').forEach(b=>b.onclick=()=>{location.hash='aula-'+b.dataset.id});
 }
