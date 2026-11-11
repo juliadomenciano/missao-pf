@@ -1,0 +1,32 @@
+{
+  "aulas": [
+    {
+      "id": "dc-01",
+      "materia": "const",
+      "numero": 1,
+      "titulo": "Direitos e deveres individuais e coletivos",
+      "resumo": "Art. 5º da CF/88: caput, incisos I a XXI e §§ 1º a 4º.",
+      "edital": "Constitucional, item 1",
+      "tempo": "2h de teoria + 40 min de questões",
+      "arquivo": "aulas/dc-01.html"
+    },
+    {
+      "id": "dc-02",
+      "materia": "const",
+      "numero": 2,
+      "titulo": "Propriedade e garantias penais e processuais",
+      "resumo": "Art. 5º, incisos XXII a LXVII.",
+      "edital": "Constitucional, item 1",
+      "embreve": true
+    },
+    {
+      "id": "dc-03",
+      "materia": "const",
+      "numero": 3,
+      "titulo": "Remédios constitucionais",
+      "resumo": "Art. 5º, incisos LXVIII a LXXIII, e o restante do artigo.",
+      "edital": "Constitucional, item 1",
+      "embreve": true
+    }
+  ]
+}

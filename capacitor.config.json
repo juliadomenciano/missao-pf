@@ -1,0 +1,9 @@
+{
+  "appId": "br.missaopf.estudos",
+  "appName": "Missão PF",
+  "webDir": "dist",
+  "android": { "backgroundColor": "#0e1117" },
+  "plugins": {
+    "LocalNotifications": { "iconColor": "#6AA7FF" }
+  }
+}

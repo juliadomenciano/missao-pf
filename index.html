@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1117">
+<title>Missão PF · Estudos</title>
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="brand"><i></i>Missão PF</div>
+  <span class="sync" id="sync" title="Onde seus dados estão salvos">carregando…</span>
+  <button class="mini-timer" id="miniTimer" type="button" aria-label="Abrir pomodoro"><i></i><span></span></button>
+  <nav class="tabs" id="tabs" aria-label="Seções do app">
+    <button type="button" data-v="hoje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Hoje</button>
+    <button type="button" data-v="pomodoro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Pomodoro</button>
+    <button type="button" data-v="estudos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Ciclo</button>
+    <button type="button" data-v="aulas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Aulas</button>
+    <button type="button" data-v="taf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/></svg>TAF</button>
+  </nav>
+</div></header>
+
+<main>
+  <!-- HOJE -->
+  <section class="view" id="v-hoje" aria-labelledby="h-hoje">
+    <div class="vhead"><span class="k" id="hojeData"></span><h1 id="h-hoje">Bom estudo, Maju</h1></div>
+    <div class="cols2">
+      <div class="card accent" id="nextCard"></div>
+      <div class="card">
+        <div class="row between"><h2>Esta semana</h2><span class="muted small num" id="semTxt"></span></div>
+        <div class="bar" style="--c:var(--ok)"><i id="semBar"></i></div>
+        <div class="week" id="weekChart"></div>
+      </div>
+    </div>
+    <div class="stats" id="hojeStats"></div>
+    <div class="cols">
+      <div class="card">
+        <div class="row between"><h2>Tarefas de hoje</h2><button class="btn sm ghost" type="button" data-go="estudos">Ver todas</button></div>
+        <form class="row" id="quickTask"><input type="text" class="grow" id="qtTxt" placeholder="Nova tarefa para hoje" aria-label="Nova tarefa"><button class="btn sm" type="submit">Adicionar</button></form>
+        <div class="list" id="hojeTasks"></div>
+      </div>
+      <div class="card">
+        <div class="row between"><h2>Horas por matéria (semana)</h2></div>
+        <div class="mbars" id="hojeMat"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row between"><h2>TAF</h2><button class="btn sm ghost" type="button" data-go="taf">Abrir treino</button></div>
+      <div class="row" id="hojeTaf"></div>
+    </div>
+  </section>
+
+  <!-- POMODORO -->
+  <section class="view" id="v-pomodoro" aria-labelledby="h-pomo">
+    <div class="vhead"><h1 id="h-pomo">Pomodoro</h1><p class="muted">O tempo de foco concluído entra automaticamente nas horas da matéria e no ciclo.</p></div>
+    <div class="card pomo" id="pomoCard">
+      <div class="msel"><label class="f" style="min-width:220px">Matéria<select id="pomoMat"></select></label></div>
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" fill="none" stroke="var(--surface2)" stroke-width="8"/><circle id="ringArc" cx="60" cy="60" r="54" fill="none" stroke="var(--acc)" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="0"/></svg>
+        <div class="center"><span class="phase" id="pomoPhase">Foco</span><span class="time" id="pomoTime" role="timer" aria-live="off">25:00</span><span class="sets" id="pomoSets"></span></div>
+      </div>
+      <div class="pomo-ctrl">
+        <button class="btn primary" type="button" id="pStart">Iniciar</button>
+        <button class="btn" type="button" id="pSkip">Pular etapa</button>
+        <button class="btn" type="button" id="pStop">Parar e registrar</button>
+      </div>
+      <p class="muted small" id="pomoNote" aria-live="polite"></p>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>Ajustes do pomodoro</h2>
+        <div class="form">
+          <label class="f">Foco (min)<input type="number" min="5" max="120" id="cfFoco"></label>
+          <label class="f">Pausa curta (min)<input type="number" min="1" max="30" id="cfPausa"></label>
+          <label class="f">Pausa longa (min)<input type="number" min="5" max="60" id="cfLonga"></label>
+          <label class="f">Focos até a pausa longa<input type="number" min="2" max="8" id="cfCiclos"></label>
+        </div>
+        <label class="row small"><input type="checkbox" id="cfSom"> Tocar som ao fim de cada etapa</label>
+        <label class="row small"><input type="checkbox" id="cfAuto"> Começar a próxima etapa sozinho</label>
+      </div>
+      <div class="card">
+        <h2>Registrar estudo sem timer</h2>
+        <p class="muted small">Para quando estudar longe do app, por exemplo com um livro ou uma videoaula.</p>
+        <form class="form" id="manualForm">
+          <label class="f">Matéria<select id="manMat"></select></label>
+          <label class="f">Minutos<input type="number" min="1" max="600" id="manMin" value="50"></label>
+          <label class="f">Data<input type="date" id="manData"></label>
+          <button class="btn" type="submit">Registrar</button>
+        </form>
+        <div class="list" id="todayLog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CICLO / ORGANIZAÇÃO -->
+  <section class="view" id="v-estudos" aria-labelledby="h-est">
+    <div class="vhead"><h1 id="h-est">Ciclo de estudos e organização</h1><p class="muted">No ciclo, as matérias rodam em fila. Se perder um dia, nada fica atrasado: você continua de onde parou.</p></div>
+    <div class="cols2">
+      <div class="card">
+        <div class="row between"><h2>Volta atual</h2><span class="pill num" id="voltaN"></span></div>
+        <div class="bar" style="--c:var(--ok)"><i id="voltaBar"></i></div>
+        <p class="muted small num" id="voltaTxt"></p>
+        <div class="cyc" id="cycList"></div>
+        <div class="row"><button class="btn sm" type="button" id="cycEditBtn">Editar ciclo</button><button class="btn sm ghost" type="button" id="cycNew">Começar nova volta</button></div>
+        <div class="cyc-edit" id="cycEdit" hidden></div>
+      </div>
+      <div class="card">
+        <h2>Metas</h2>
+        <div class="form">
+          <label class="f">Meta semanal (horas)<input type="number" min="1" max="80" id="cfMeta"></label>
+          <label class="f">Data da prova (quando sair o edital)<input type="date" id="cfProva"></label>
+        </div>
+        <p class="muted small">Com 2 a 3 horas por dia mais os fins de semana, uma meta entre 16 e 20 horas é realista.</p>
+        <h2 style="margin-top:6px">Histórico</h2>
+        <div class="stats" id="histStats"></div>
+      </div>
+      <div class="card">
+        <h2>Conta e backup</h2>
+        <div id="contaBox"></div>
+        <div class="row"><button class="btn sm" type="button" id="bkCopy">Copiar backup</button><button class="btn sm ghost" type="button" id="bkLoad">Restaurar backup</button></div>
+        <textarea id="bkTxt" rows="4" hidden aria-label="Texto do backup"></textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row between"><h2>Tarefas</h2><div class="seg" id="taskFilter"><button type="button" data-f="abertas" aria-pressed="true">Abertas</button><button type="button" data-f="feitas" aria-pressed="false">Feitas</button><button type="button" data-f="todas" aria-pressed="false">Todas</button></div></div>
+      <form class="form" id="taskForm">
+        <label class="f" style="grid-column:span 2">Tarefa<input type="text" id="tTxt" placeholder="Ex.: refazer questões erradas da Aula 1"></label>
+        <label class="f">Matéria<select id="tMat"></select></label>
+        <label class="f">Para quando<input type="date" id="tData"></label>
+        <button class="btn" type="submit">Adicionar</button>
+      </form>
+      <div class="list" id="taskList"></div>
+    </div>
+  </section>
+
+  <!-- AULAS -->
+  <section class="view" id="v-aulas" aria-labelledby="h-aulas">
+    <div id="aulasCat">
+      <div class="vhead" style="margin-bottom:16px"><h1 id="h-aulas">Aulas</h1><p class="muted">Cada aula é carregada só quando você abre, para o app continuar leve no celular.</p></div>
+      <div class="seg" id="aulaFilter" style="margin-bottom:14px"></div>
+      <div class="cat" id="aulaList"><p class="empty">Carregando aulas…</p></div>
+    </div>
+    <div id="aulaView" hidden></div>
+  </section>
+
+  <!-- LOGIN -->
+  <section class="view" id="v-login" aria-label="Entrar"></section>
+
+  <!-- TAF -->
+  <section class="view" id="v-taf" aria-labelledby="h-taf">
+    <div class="vhead"><h1 id="h-taf">Treino para o TAF</h1><p class="muted">Índices femininos do edital de 2025. Confira no próximo edital, porque eles podem mudar.</p></div>
+    <div class="taf" id="tafCards"></div>
+    <div class="cols">
+      <div class="card">
+        <h2>Registrar marca de teste</h2>
+        <p class="muted small">Faça um teste simulando a prova e anote o resultado.</p>
+        <form class="form" id="marcaForm">
+          <label class="f">Prova<select id="mProva"></select></label>
+          <label class="f"><span id="mUnit">Valor</span><input type="text" inputmode="decimal" id="mVal" placeholder=""></label>
+          <label class="f">Data<input type="date" id="mData"></label>
+          <button class="btn" type="submit">Salvar marca</button>
+        </form>
+        <div class="list" id="marcaList"></div>
+      </div>
+      <div class="card">
+        <div class="row between"><h2>Treinos</h2><span class="pill num" id="treinoSem"></span></div>
+        <form class="form" id="treinoForm">
+          <label class="f">Tipo<select id="trTipo"></select></label>
+          <label class="f">Duração (min)<input type="number" min="5" max="300" id="trMin" value="45"></label>
+          <label class="f">Data<input type="date" id="trData"></label>
+          <label class="f" style="grid-column:1/-1">Observação<input type="text" id="trObs" placeholder="Ex.: 6 × 400 m, ritmo forte"></label>
+          <button class="btn" type="submit">Salvar treino</button>
+        </form>
+        <div class="list" id="treinoList"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
