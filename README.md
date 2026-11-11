@@ -12,13 +12,8 @@ Os dados ficam no Supabase, na tabela `mpf_docs`. Ela pode ficar no mesmo projet
 ## 1. Supabase
 
 1. Abra o SQL Editor do projeto e rode o arquivo `supabase/schema.sql`. Ele cria a tabela, as políticas de RLS e liga o realtime.
-2. Em **Authentication > Sign In / Providers**, confirme que o login por **Email** está ativo.
-3. Em **Authentication > Emails > Magic Link**, troque o corpo do e-mail para mostrar o código:
-   ```html
-   <h2>Seu código do Missão PF</h2>
-   <p style="font-size:28px;letter-spacing:6px"><b>{{ .Token }}</b></p>
-   ```
-   O app pede o código de 6 dígitos e não usa link. Assim funciona igual no PC e no APK, sem precisar configurar deep link.
+2. O login é feito com e-mail e senha. Na primeira vez, o Supabase envia um e-mail com um link de confirmação: é só clicar nele uma vez. Não precisa mudar nenhum template.
+3. Se quiser pular a confirmação por e-mail, desligue **Authentication > Sign In / Providers > Email > Confirm email**.
 4. Em **Project Settings > API**, copie a **Project URL** e a chave **anon public**.
 
 > No plano grátis, o Supabase pausa o projeto depois de cerca de 1 semana sem nenhum acesso. Usando o app no dia a dia, isso não acontece.

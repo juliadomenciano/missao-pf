@@ -114,15 +114,17 @@ export async function start(h) {
   return user;
 }
 
-export async function sendCode(email) {
-  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-  if (error) throw error;
-}
-
-export async function verifyCode(email, token) {
-  const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
+export async function signIn(email, password) {
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data.user;
+}
+
+export async function signUp(email, password) {
+  const redirect = (import.meta.env.VITE_AULAS_URL || '').replace(/\/$/, '') || undefined;
+  const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: redirect } });
+  if (error) throw error;
+  return { user: data.user, session: data.session };
 }
 
 export async function signOut() {

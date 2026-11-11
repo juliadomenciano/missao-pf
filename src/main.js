@@ -1,5 +1,5 @@
 import './style.css';
-import { start as startSync, markDirty, configured, currentUser, sendCode, verifyCode, signOut, pull } from './sync.js';
+import { start as startSync, markDirty, configured, currentUser, signIn, signUp, signOut, pull } from './sync.js';
 import { setupNative, askPermission, scheduleAlert, cancelAlert, isNative } from './native.js';
 import { getLessonText } from './lessons.js';
 
@@ -497,23 +497,47 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();re
 })();
 
 function needLogin(){return configured()&&!currentUser()&&!local.get('semConta')}
-let loginEmail=local.get('loginEmail')||'',codeSent=false;
+let loginEmail=local.get('loginEmail')||'',loginModo='entrar';
+function authMsg(err){
+  const t=String(err&&err.message||err||'');
+  if(/invalid login credentials/i.test(t))return 'E-mail ou senha incorretos.';
+  if(/email not confirmed/i.test(t))return 'Confirme seu e-mail pelo link que o Supabase enviou e tente de novo.';
+  if(/already registered|already been registered/i.test(t))return 'Esse e-mail já tem conta. Use "Entrar".';
+  if(/password should be at least|weak/i.test(t))return 'A senha precisa ter pelo menos 6 caracteres.';
+  if(/rate limit|too many/i.test(t))return 'Muitas tentativas. Espere alguns minutos e tente de novo.';
+  if(/fetch|network/i.test(t))return 'Sem conexão com a internet.';
+  return 'Não deu certo: '+t;
+}
 function renderLogin(){
-  const v=$('#v-login');
+  const v=$('#v-login');const novo=loginModo==='criar';
   v.innerHTML=`<div class="card login">
     <div class="brand" style="font-size:24px"><i></i>Missão PF</div>
-    <h1>Entrar</h1>
-    <p class="muted">Use seu e-mail para salvar seus estudos na nuvem e ver tudo igual no celular e no PC. Você recebe um código de 6 dígitos, sem senha.</p>
-    ${!codeSent?`<form id="lgEmail" class="lgform"><label class="f">E-mail<input type="email" id="lgE" required autocomplete="email" value="${esc(loginEmail)}"></label><button class="btn primary" type="submit">Receber código</button></form>`
-    :`<form id="lgCode" class="lgform"><p class="small">Código enviado para <b>${esc(loginEmail)}</b>.</p><label class="f">Código<input type="text" id="lgC" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required></label><button class="btn primary" type="submit">Entrar</button><button class="btn ghost sm" type="button" id="lgBack">Usar outro e-mail</button></form>`}
+    <h1>${novo?'Criar conta':'Entrar'}</h1>
+    <p class="muted">${novo?'Crie sua conta uma vez. Depois é só entrar com o mesmo e-mail e senha no celular e no PC.':'Entre para salvar seus estudos na nuvem e ver tudo igual no celular e no PC.'}</p>
+    <form id="lgForm" class="lgform">
+      <label class="f">E-mail<input type="email" id="lgE" required autocomplete="email" value="${esc(loginEmail)}"></label>
+      <label class="f">Senha<input type="password" id="lgP" required minlength="6" autocomplete="${novo?'new-password':'current-password'}"></label>
+      <button class="btn primary" type="submit">${novo?'Criar conta':'Entrar'}</button>
+    </form>
     <p class="small" id="lgMsg" aria-live="polite"></p>
+    <button class="btn ghost sm" type="button" id="lgTroca">${novo?'Já tenho conta: entrar':'Primeira vez? Criar conta'}</button>
     <button class="btn ghost sm" type="button" id="lgLocal">Usar sem conta neste aparelho</button>
   </div>`;
   const msg=t=>{v.querySelector('#lgMsg').textContent=t};
-  const fe=v.querySelector('#lgEmail');
-  if(fe)fe.onsubmit=async e=>{e.preventDefault();loginEmail=v.querySelector('#lgE').value.trim();local.set('loginEmail',loginEmail);msg('Enviando…');try{await sendCode(loginEmail);codeSent=true;renderLogin()}catch(err){msg('Não consegui enviar o código: '+(err.message||err))}};
-  const fc=v.querySelector('#lgCode');
-  if(fc){fc.onsubmit=async e=>{e.preventDefault();msg('Conferindo…');try{await verifyCode(loginEmail,v.querySelector('#lgC').value.trim());codeSent=false;local.set('semConta',false);go('hoje');route();toast('Conta conectada.')}catch(err){msg('Código inválido ou expirado. Tente de novo.')}};v.querySelector('#lgBack').onclick=()=>{codeSent=false;renderLogin()}}
+  v.querySelector('#lgForm').onsubmit=async e=>{
+    e.preventDefault();
+    loginEmail=v.querySelector('#lgE').value.trim();local.set('loginEmail',loginEmail);
+    const pw=v.querySelector('#lgP').value;
+    msg(novo?'Criando conta…':'Entrando…');
+    try{
+      if(novo){
+        const r=await signUp(loginEmail,pw);
+        if(!r.session){loginModo='entrar';renderLogin();v.querySelector('#lgMsg').textContent='Conta criada! Abra o e-mail do Supabase e clique no link de confirmação. Depois volte aqui e entre.';return}
+      }else await signIn(loginEmail,pw);
+      local.set('semConta',false);go('hoje');route();toast('Conta conectada.');
+    }catch(err){msg(authMsg(err))}
+  };
+  v.querySelector('#lgTroca').onclick=()=>{loginModo=novo?'entrar':'criar';renderLogin()};
   v.querySelector('#lgLocal').onclick=()=>{local.set('semConta',true);go('hoje');route()};
 }
 function renderConta(){

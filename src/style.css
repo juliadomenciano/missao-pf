@@ -228,7 +228,6 @@ label.f{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
 #v-login.on{min-height:70vh;place-content:center}
 .login{max-width:440px;width:100%;margin:0 auto;padding:26px 24px;gap:14px}
 .lgform{display:grid;gap:10px}
-input[type=email]{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:16px}
-#lgC{font-size:22px;letter-spacing:.3em;text-align:center;font-variant-numeric:tabular-nums}
+input[type=email],input[type=password]{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:16px}
 textarea{width:100%;font-size:13px;font-family:ui-monospace,monospace}
 .tabs[hidden]{display:none!important}
