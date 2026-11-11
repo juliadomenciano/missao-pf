@@ -306,3 +306,20 @@ button.li:hover{border-color:var(--line)}
 .caso p{font-size:17px}
 .li.opc{align-items:flex-start;padding:14px}
 .li.opc .ord{font-family:var(--display);font-weight:800;color:var(--acc);min-width:20px}
+
+.tday{align-items:center}
+.tday .dname{font-family:var(--display);font-weight:800;width:38px;flex:none}
+.tday.hoje{outline:1px solid var(--acc)}
+.guia{display:grid;gap:14px}
+.guia-main{background:color-mix(in srgb,var(--gc) 14%,var(--surface));border:2px solid var(--gc);border-radius:20px;padding:26px 18px;display:grid;justify-items:center;gap:8px;text-align:center}
+.guia-nome{font-family:var(--display);font-weight:800;font-size:clamp(30px,9vw,44px);color:var(--gc);line-height:1.05}
+.guia-t{font-family:var(--display);font-weight:800;font-size:clamp(64px,22vw,110px);line-height:1}
+.guia-sub{color:var(--muted);font-size:15px;max-width:34ch}
+.guia-ctl .btn{flex:1;padding:14px}
+.ex h3{font-size:17px}
+.sets{display:grid;gap:6px}
+.set{display:grid;grid-template-columns:24px 1fr 1fr auto;gap:8px;align-items:center}
+.set:has(> input:only-of-type){grid-template-columns:24px 1fr auto}
+.set .n{font-family:var(--display);font-weight:800;color:var(--muted);text-align:center}
+.set.ok input{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+.rest{position:sticky;top:calc(56px + env(safe-area-inset-top));z-index:8;background:var(--surface2);border:1px solid var(--acc);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between}

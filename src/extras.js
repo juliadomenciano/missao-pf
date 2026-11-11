@@ -269,9 +269,7 @@ function renderTafExtra() {
   ];
   const plano = sessoes.slice(0, Math.max(3, Math.min(4, dias.length))).map((s, i) => ({ ...s, dia: dias[i % dias.length] }));
   el.innerHTML = `<div class="card"><div class="row between"><h2>Cronômetro de teste</h2>${crono ? '' : ''}</div><div class="seg" id="crSel">${[['barra', 'Barra'], ['nat', 'Natação 50 m'], ['corr', 'Corrida 12 min']].map(([k, n]) => `<button type="button" data-k="${k}" aria-pressed="${crono && crono.k === k}">${n}</button>`).join('')}</div><div id="crBox"></div></div>
-    <div class="card"><h2>Plano de treino da semana</h2><p class="small muted">Montado a partir das suas melhores marcas e dos dias de treino escolhidos no lembrete do TAF (${dias.map((d) => DN[d]).join(', ')}). Ele se ajusta conforme você registra testes novos.</p>
-      <div class="list">${plano.map((s) => { const pr = C.PM[s.prova]; return `<div class="li plano" style="border-left:4px solid ${pr.c};align-items:flex-start"><span class="t"><span class="k">${DN[s.dia]}</span><br><b>${s.n}</b>${s.itens.map(([a, b]) => `<br><span class="small"><b>${a}:</b> ${b}</span>`).join('')}</span></div>`; }).join('')}</div>
-      <p class="small muted">Comece sempre com 10 min de aquecimento. Se sentir dor (não cansaço), pare. Se puder, valide o plano com um profissional de educação física.</p></div>`;
+    <div class="card"><h2>Plano de treino</h2><p class="small muted">A semana de treino (corrida do zero até 1.800 m, força A e B e natação) fica em Treino físico. As marcas dos treinos de barra, salto e natação entram aqui sozinhas.</p><button class="btn primary" type="button" data-go="treino" style="justify-self:start">Abrir Treino físico</button></div></div>`;
   el.querySelectorAll('#crSel button').forEach((b) => b.onclick = () => { crono = { k: b.dataset.k, ini: null, fim: null }; renderTafExtra(); });
   drawCrono();
 }

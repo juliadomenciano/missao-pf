@@ -5,6 +5,7 @@ import { getLessonText } from './lessons.js';
 import { initRevisao, applyReminders } from './revisao.js';
 import { initExtras } from './extras.js';
 import { initCasos } from './casos.js';
+import { initTreino } from './treino.js';
 import { initQuest, renderQdia, renderSimulados, renderErros, lessonAnswered, aulaEstudada } from './quest.js';
 
 const MAT=[
@@ -450,6 +451,7 @@ const IC={
  law:'<path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z"/>',
  pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
  case:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+ run:'<circle cx="14" cy="4" r="2"/><path d="M8 21l3-6 3 2v4M6 12l3-3 4 1 3 3 3 1M11 15l-1-4"/>',
  gym:'<path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/>',
  chart:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
  medal:'<circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 3h4l2 4 2-4h4l-2.5 6.5"/>',
@@ -459,13 +461,13 @@ const NAV=[
  ['Estudo',[['hoje','Hoje','home'],['pomodoro','Pomodoro','timer'],['estudos','Ciclo e tarefas','cycle'],['aulas','Aulas','book']]],
  ['Questões',[['qdia','Questão do dia','sun'],['simulados','Simulados','check'],['erros','Caderno de erros','x']]],
  ['Revisão',[['revisao','Revisar hoje','rev'],['flash','Flashcards','cards'],['lei','Lei seca','law']]],
- ['Prática',[['discursiva','Discursiva','pen'],['casos','Casos investigativos','case'],['taf','TAF','gym']]],
+ ['Prática',[['discursiva','Discursiva','pen'],['casos','Casos investigativos','case'],['treino','Treino físico','run'],['taf','TAF: marcas e testes','gym']]],
  ['Você',[['painel','Desempenho','chart','painel'],['conquistas','Conquistas','medal','conquistas'],['config','Configurações','gear']]]
 ];
 const EXT={};
 const TITLES={login:'Entrar'};
 NAV.forEach(([,l])=>l.forEach(([id,n])=>TITLES[id]=n));
-TITLES.casos='Casos';TITLES.estudos='Ciclo';
+TITLES.casos='Casos';TITLES.treino='Treino';TITLES.taf='TAF';TITLES.estudos='Ciclo';
 const BASE_VIEWS_=['hoje','pomodoro','estudos','aulas','taf','login','qdia','simulados','erros','config'];
 const BASE_VIEWS=BASE_VIEWS_;
 function viewOk(id){return BASE_VIEWS.includes(id)||(!!EXT[id]&&!['counts','hoje','config','patente','taf'].includes(id))}
@@ -646,3 +648,4 @@ initQuest(ctx);
 initRevisao(ctx);
 initExtras(ctx);
 initCasos(ctx);
+initTreino(ctx);

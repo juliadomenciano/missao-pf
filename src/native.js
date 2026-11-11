@@ -69,3 +69,19 @@ export async function setReminders(list) {
     return true;
   } catch (e) { console.warn('lembretes', e); return false; }
 }
+
+const SERIES_IDS = Array.from({ length: 60 }, (_, i) => 200 + i);
+
+export async function scheduleSeries(items) {
+  if (!isNative) return;
+  try {
+    await LocalNotifications.cancel({ notifications: SERIES_IDS.map((id) => ({ id })) });
+    const list = items.filter((n) => n.at > Date.now()).slice(0, SERIES_IDS.length).map((n, i) => ({ id: SERIES_IDS[i], title: n.title, body: n.body || '', channelId: 'pomodoro', schedule: { at: new Date(n.at), allowWhileIdle: true } }));
+    if (list.length) await LocalNotifications.schedule({ notifications: list });
+  } catch (e) { console.warn('serie', e); }
+}
+
+export async function cancelSeries() {
+  if (!isNative) return;
+  try { await LocalNotifications.cancel({ notifications: SERIES_IDS.map((id) => ({ id })) }); } catch (e) {}
+}

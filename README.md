@@ -99,6 +99,7 @@ src/quest.js          banco de itens, questão do dia, simulados e caderno de er
 src/revisao.js        revisão espaçada, flashcards, lei seca e lembretes
 src/extras.js         desempenho, patentes, conquistas, plano e cronômetro do TAF e discursiva
 src/casos.js          motor dos casos investigativos
+src/treino.js         treino físico: semana, corrida do zero (12 semanas, guiada), força A/B e natação
 src/sync.js           sincronização com o Supabase (offline-first, realtime)
 src/native.js         notificações, status bar e botão voltar no Android
 src/lessons.js        carregamento das aulas (remoto → embutido → cache)
