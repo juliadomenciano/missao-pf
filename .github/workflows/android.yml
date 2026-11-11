@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -38,6 +41,7 @@ jobs:
         working-directory: android
         env:
           MPF_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          MPF_VERSION_CODE: ${{ github.run_number }}
         run: |
           chmod +x gradlew
           if [ -f app/missao-pf.keystore ]; then
@@ -46,10 +50,26 @@ jobs:
             ./gradlew assembleDebug
           fi
 
+      - name: Preparar APK
+        run: |
+          mkdir -p out
+          APK=$(ls android/app/build/outputs/apk/release/*.apk 2>/dev/null | head -1)
+          [ -z "$APK" ] && APK=$(ls android/app/build/outputs/apk/debug/*.apk | head -1)
+          cp "$APK" out/missao-pf.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: missao-pf-apk
-          path: |
-            android/app/build/outputs/apk/release/*.apk
-            android/app/build/outputs/apk/debug/*.apk
+          path: out/missao-pf.apk
           if-no-files-found: error
+
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Missão PF 1.0.${{ github.run_number }}
+          body: |
+            Versão gerada a partir de ${{ github.sha }}.
+            Para instalar ou atualizar, baixe o missao-pf.apk abaixo e abra no celular.
+          files: out/missao-pf.apk
+          make_latest: true

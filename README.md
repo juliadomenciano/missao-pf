@@ -39,7 +39,7 @@ Preencha o `.env` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Para desen
 3. Em **Settings > Pages**, escolha **Source: GitHub Actions**.
 4. Faça o push para `main`. Dois workflows rodam:
    - **PWA no GitHub Pages** publica o site;
-   - **APK Android** gera o APK, que fica em *Actions > (execução) > Artifacts > missao-pf-apk*.
+   - **APK Android** gera o APK assinado e publica uma release `v1.0.N` com o arquivo `missao-pf.apk`.
 
 ## 4. Assinatura do APK (recomendado)
 
@@ -60,8 +60,8 @@ Use a mesma senha para a store e para a chave. Depois, crie os secrets:
 
 ## 5. Instalar no Android
 
-1. Baixe o zip do artifact `missao-pf-apk` no celular e extraia o `.apk`.
-2. Abra o arquivo e permita instalar de fontes desconhecidas quando o Android pedir.
+1. No celular, abra https://github.com/juliadomenciano/missao-pf/releases/latest/download/missao-pf.apk. Esse link sempre baixa a versão mais nova.
+2. Abra o arquivo e permita instalar de fontes desconhecidas quando o Android pedir. Para atualizar, baixe pelo mesmo link e instale por cima.
 3. Na primeira vez que iniciar o pomodoro, permita as notificações.
 
 Se o aviso do timer atrasar com o celular parado, desative a otimização de bateria para o app em **Configurações > Apps > Missão PF > Bateria > Sem restrições**.
