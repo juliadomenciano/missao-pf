@@ -6,6 +6,7 @@ import { initRevisao, applyReminders } from './revisao.js';
 import { initExtras } from './extras.js';
 import { initCasos } from './casos.js';
 import { initTreino } from './treino.js';
+import { initPlano } from './plano.js';
 import { initQuest, renderQdia, renderSimulados, renderErros, lessonAnswered, aulaEstudada } from './quest.js';
 
 const MAT=[
@@ -454,6 +455,7 @@ const IC={
  run:'<circle cx="14" cy="4" r="2"/><path d="M8 21l3-6 3 2v4M6 12l3-3 4 1 3 3 3 1M11 15l-1-4"/>',
  gym:'<path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/>',
  chart:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+ map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
  medal:'<circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 3h4l2 4 2-4h4l-2.5 6.5"/>',
  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
 };
@@ -462,12 +464,12 @@ const NAV=[
  ['Questões',[['qdia','Questão do dia','sun'],['simulados','Simulados','check'],['erros','Caderno de erros','x']]],
  ['Revisão',[['revisao','Revisar hoje','rev'],['flash','Flashcards','cards'],['lei','Lei seca','law']]],
  ['Prática',[['discursiva','Discursiva','pen'],['casos','Casos investigativos','case'],['treino','Treino físico','run'],['taf','TAF: marcas e testes','gym']]],
- ['Você',[['painel','Desempenho','chart','painel'],['conquistas','Conquistas','medal','conquistas'],['config','Configurações','gear']]]
+ ['Você',[['plano','Meu plano','map'],['painel','Desempenho','chart','painel'],['conquistas','Conquistas','medal','conquistas'],['config','Configurações','gear']]]
 ];
 const EXT={};
 const TITLES={login:'Entrar'};
 NAV.forEach(([,l])=>l.forEach(([id,n])=>TITLES[id]=n));
-TITLES.casos='Casos';TITLES.treino='Treino';TITLES.taf='TAF';TITLES.estudos='Ciclo';
+TITLES.casos='Casos';TITLES.plano='Meu plano';TITLES.treino='Treino';TITLES.taf='TAF';TITLES.estudos='Ciclo';
 const BASE_VIEWS_=['hoje','pomodoro','estudos','aulas','taf','login','qdia','simulados','erros','config'];
 const BASE_VIEWS=BASE_VIEWS_;
 function viewOk(id){return BASE_VIEWS.includes(id)||(!!EXT[id]&&!['counts','hoje','config','patente','taf'].includes(id))}
@@ -649,3 +651,4 @@ initRevisao(ctx);
 initExtras(ctx);
 initCasos(ctx);
 initTreino(ctx);
+initPlano(ctx);
