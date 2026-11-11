@@ -3,6 +3,7 @@ import { start as startSync, markDirty, configured, currentUser, signIn, signUp,
 import { setupNative, askPermission, scheduleAlert, cancelAlert, isNative } from './native.js';
 import { getLessonText } from './lessons.js';
 import { initRevisao, applyReminders } from './revisao.js';
+import { initExtras } from './extras.js';
 import { initQuest, renderQdia, renderSimulados, renderErros, lessonAnswered, aulaEstudada } from './quest.js';
 
 const MAT=[
@@ -91,7 +92,7 @@ function applyRemote(name,data){
   S[name]=merge(base,clone(data||{}));
   local.set(name,S[name]);
 }
-function logMonths(){const a=new Set();const ws=weekStart();for(let i=-35;i<=7;i++)a.add(mkey(dkey(addDays(ws,i))));a.add(mkey(dkey()));return [...a]}
+function logMonths(){const a=new Set();const ws=weekStart();for(let i=-63;i<=7;i++)a.add(mkey(dkey(addDays(ws,i))));a.add(mkey(dkey()));return [...a]}
 
 function minutesOn(k,m){const d=getDoc(mkey(k)).d[k]||{};return m?(d[m]||0):Object.values(d).reduce((a,b)=>a+b,0)}
 function addMinutes(m,min,k=dkey()){
@@ -641,3 +642,4 @@ function onEvent(type,data){listeners.forEach(f=>{try{f(type,data)}catch(e){cons
 export const ctx={S,getDoc,save,local,$,esc,clone,pad,dkey,parseKey,addDays,weekStart,fmtDate,fmtH,fmtClock,fmtClockH,toast,uid,MM,MAT,PROVAS,PM,go,renderAll,renderNav,loadCatalog,fetchAula,aulaMateria,minutesOn,streak,bestMark,fmtMark,marksOf,addMarca:(p,v,d)=>{getDoc('taf').marcas.push({id:uid(),p,v,d:d||dkey()});save('taf');renderAll()},beep,unlockAudio,isNative,EXT,modOn,onEvent,listen:f=>listeners.push(f),logMonths,registerDoc:(n,d)=>{DEF[n]=d}};
 initQuest(ctx);
 initRevisao(ctx);
+initExtras(ctx);
