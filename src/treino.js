@@ -104,6 +104,28 @@ const FICHAS = {
   },
 };
 
+const EXTRA = {
+  agachP: { id: 'agachP', n: 'Agachamento parcial', series: 3, alvo: '10', acad: 'No leg press com amplitude curta ou agachamento até onde não doer, com carga leve.', casa: 'Sentar e levantar de uma cadeira alta, sem peso.', desc: 75 },
+  ponte: { id: 'ponte', n: 'Elevação pélvica', series: 3, alvo: '12', acad: 'Na máquina, ou no chão com a carga apoiada no quadril se não incomodar o ombro.', casa: 'Ponte de glúteo no chão, sem peso.', desc: 60 },
+  flexora: { id: 'flexora', n: 'Flexão de joelhos (posterior)', series: 3, alvo: '10–12', acad: 'Mesa ou cadeira flexora, com carga moderada.', casa: 'Ponte unilateral ou flexão de joelhos com elástico.', desc: 60 },
+  abd: { id: 'abd', n: 'Abdução de quadril', series: 3, alvo: '15', acad: 'Na máquina abdutora.', casa: 'Deitada de lado, com ou sem elástico.', desc: 45 },
+  pernas: { id: 'pernas', n: 'Elevação de pernas deitada', series: 3, alvo: '10', acad: 'Braços ao lado do corpo, lombar apoiada no chão.', casa: 'Igual.', desc: 45 },
+  deadbug: { id: 'deadbug', n: 'Dead bug só com as pernas', series: 3, alvo: '10 cada lado', acad: 'Braços apoiados no chão ao lado do corpo, alternando as pernas devagar.', casa: 'Igual.', desc: 45 },
+};
+const SUP = ['iso', 'puxada', 'remada', 'flexao', 'ombro', 'rosca', 'prancha', 'core', 'iso2', 'terra'];
+const JOELHO = ['salto', 'agsalto', 'afundo'];
+
+function fichaAtiva(tipo) {
+  const r = (T().restr || {});
+  if (tipo === 'forcaA' && r.sup) return { nome: 'Força A adaptada: glúteo, posterior e abdômen (sem braços)', ex: [EXTRA.ponte, EXTRA.flexora, EXTRA.abd, FICHAS.forcaB.ex.find((e) => e.id === 'pant'), EXTRA.pernas, EXTRA.deadbug], adapt: true };
+  const base = FICHAS[tipo];
+  if (!r.sup && !r.joelho) return base;
+  let ex = base.ex.filter((e) => !(r.sup && SUP.includes(e.id)) && !(r.joelho && JOELHO.includes(e.id)));
+  if (r.joelho) ex = ex.map((e) => (e.id === 'agach' ? EXTRA.agachP : e));
+  [EXTRA.ponte, EXTRA.abd, EXTRA.flexora, EXTRA.deadbug].forEach((e) => { if (ex.length < 6 && !ex.some((x) => x.id === e.id)) ex.push(e); });
+  return { nome: base.nome + ' (adaptada)', ex, adapt: true };
+}
+
 const NATACAO = [
   ['Aquecimento', '300 m soltos, misturando crawl e costas.'],
   ['Técnica', '4 × 50 m de educativos (pernada com prancha, braçada com pull buoy, respiração bilateral), com 20 s de pausa.'],
@@ -120,7 +142,7 @@ export function initTreino(ctx) {
   C.EXT.hoje = () => (prev ? prev() : '') + hojeCard();
 }
 
-const T = () => { const t = C.getDoc('treino'); t.dias = t.dias || { ...DEF_DIAS }; t.corrida = t.corrida || { semana: 1, feitas: {} }; t.runs = t.runs || []; t.forca = t.forca || []; t.nat = t.nat || []; return t; };
+const T = () => { const t = C.getDoc('treino'); t.restr = t.restr || { sup: false, joelho: false }; t.dias = t.dias || { ...DEF_DIAS }; t.corrida = t.corrida || { semana: 1, feitas: {} }; t.runs = t.runs || []; t.forca = t.forca || []; t.nat = t.nat || []; return t; };
 
 function corridaIdx(dow) {
   const dias = T().dias;
@@ -162,7 +184,7 @@ function renderTreino(v) {
     const done = (tipo === 'corrida' && f.run) || (tipo.startsWith('forca') && f.forca) || (tipo === 'natacao' && f.nat) || (tipo === 'beach' && (C.getDoc('taf').treinos || []).some((x) => x.d === dk));
     let det = '';
     if (tipo === 'corrida') { const s = prog[corridaIdx(dow)]; const d = descSess(s); det = `Corrida ${'ABC'[corridaIdx(dow)]} · ~${d.min} min<br><span class="small muted">${d.txt}</span>`; }
-    else if (tipo.startsWith('forca')) det = `${FICHAS[tipo].nome} · ~45 min`;
+    else if (tipo.startsWith('forca')) det = `${fichaAtiva(tipo).nome} · ~45 min`;
     else if (tipo === 'natacao') det = 'Natação · 60–75 min';
     else det = TIPOS[tipo].n;
     return { dow, dk, tipo, done, det, hoje: dk === hoje, passado: dk < hoje };
@@ -174,6 +196,11 @@ function renderTreino(v) {
     <div class="card"><div class="row between"><h2>Esta semana</h2><div class="seg" id="trLocal"><button type="button" data-l="academia" aria-pressed="${t.local === 'academia'}">Academia</button><button type="button" data-l="casa" aria-pressed="${t.local === 'casa'}">Casa</button></div></div>
       <div class="list">${dias.map((d) => `<div class="li tday${d.hoje ? ' hoje' : ''}" style="border-left:4px solid ${TIPOS[d.tipo].c}"><span class="dname">${DN[d.dow]}</span><span class="t">${d.det}</span>${d.done ? '<span class="pill ok">✓</span>' : d.tipo === 'livre' ? '' : `<button class="btn sm${d.hoje ? ' primary' : ''}" type="button" data-start="${d.dow}">${d.hoje ? 'Começar' : 'Fazer'}</button>`}</div>`).join('')}</div>
       <button class="btn sm ghost" type="button" id="trDias" style="justify-self:start">Ajustar dias</button><div id="trDiasBox" hidden></div></div>
+    <div class="card"><h2>Ajustes temporários</h2><p class="small muted">Para respeitar uma lesão ou uma orientação médica. Os treinos se adaptam sozinhos, e você desliga quando estiver liberada.</p>
+      <label class="toggle"><span class="t">Pausar membros superiores<small>A Força A vira um treino de glúteo, posterior e abdômen sem apoio de braços. Saem a barra, a prancha e os exercícios segurando peso.</small></span><input class="sw" type="checkbox" id="rSup" ${t.restr.sup ? 'checked' : ''}></label>
+      <label class="toggle"><span class="t">Poupar joelhos<small>Saem os saltos, o agachamento com salto e o afundo. O agachamento vira parcial, e entram exercícios de quadril.</small></span><input class="sw" type="checkbox" id="rJoe" ${t.restr.joelho ? 'checked' : ''}></label>
+      ${t.restr.sup ? '<p class="small" style="color:var(--warn)">O nado crawl usa bastante o ombro. Confirme com o médico ou a fisioterapeuta se a natação está liberada durante a fisioterapia.</p>' : ''}
+      ${t.restr.joelho ? '<p class="small muted">Na corrida, se o joelho doer (dor, não cansaço), troque o trecho por caminhada e registre como "muito difícil" para repetir a semana.</p>' : ''}</div>
     <div class="cols">
       <div class="card"><div class="row between"><h2>Programa de corrida</h2><span class="pill num">Semana ${sem} de ${PROGRAMA.length}</span></div>
         <div class="bar" style="--c:#ff7f6e"><i style="width:${Math.round(((sem - 1) * 3 + Math.min(3, feitasSem)) / (PROGRAMA.length * 3) * 100)}%"></i></div>
@@ -188,6 +215,8 @@ function renderTreino(v) {
   v.querySelectorAll('#trLocal button').forEach((b) => b.onclick = () => { t.local = b.dataset.l; C.save('treino'); renderTreino(v); });
   v.querySelectorAll('[data-start]').forEach((b) => b.onclick = () => iniciar(v, +b.dataset.start));
   v.querySelector('#trDias').onclick = () => editDias(v);
+  v.querySelector('#rSup').onchange = (e) => { t.restr.sup = e.target.checked; C.save('treino'); renderTreino(v); };
+  v.querySelector('#rJoe').onchange = (e) => { t.restr.joelho = e.target.checked; C.save('treino'); renderTreino(v); };
   v.querySelector('#trAvanca').onclick = () => { t.corrida.semana = Math.min(PROGRAMA.length, sem + 1); C.save('treino'); C.toast(`Semana ${t.corrida.semana} liberada!`); renderTreino(v); };
   v.querySelector('#trRepete').onclick = () => { t.corrida.feitas[sem] = []; C.save('treino'); C.toast('Semana reiniciada.'); renderTreino(v); };
   const vt = v.querySelector('#trVolta'); if (vt) vt.onclick = () => { t.corrida.semana = sem - 1; t.corrida.feitas[sem - 1] = []; C.save('treino'); renderTreino(v); };
@@ -233,9 +262,9 @@ function iniciar(v, dow) {
     return drawGuia(v);
   }
   if (tipo === 'forcaA' || tipo === 'forcaB') {
-    const ficha = FICHAS[tipo];
+    const ficha = fichaAtiva(tipo);
     const last = [...t.forca].reverse().find((f) => f.ficha === tipo);
-    modo = { tipo: 'forca', ficha: tipo, local: t.local, sets: Object.fromEntries(ficha.ex.map((e) => [e.id, Array.from({ length: e.series }, (_, i) => { const l = last && last.ex[e.id] && last.ex[e.id][i]; return { r: l ? l.r : '', kg: l ? l.kg : '', ok: false }; })])), last };
+    modo = { tipo: 'forca', ficha: tipo, fichaObj: ficha, local: t.local, sets: Object.fromEntries(ficha.ex.map((e) => [e.id, Array.from({ length: e.series }, (_, i) => { const l = last && last.ex[e.id] && last.ex[e.id][i]; return { r: l ? l.r : '', kg: l ? l.kg : '', ok: false }; })])), last };
     return drawForca(v);
   }
   if (tipo === 'natacao') return drawNatacao(v);
@@ -343,7 +372,7 @@ let restTick = null;
 
 function drawForca(v) {
   const f = modo;
-  const ficha = FICHAS[f.ficha];
+  const ficha = f.fichaObj || fichaAtiva(f.ficha);
   v.innerHTML = `<div class="row between"><button class="btn sm ghost" type="button" id="fBack">← Semana</button><div class="seg" id="fLocal"><button type="button" data-l="academia" aria-pressed="${f.local === 'academia'}">Academia</button><button type="button" data-l="casa" aria-pressed="${f.local === 'casa'}">Casa</button></div></div>
     <div class="vhead"><h1>${ficha.nome}</h1><p class="muted">Preencha as repetições (ou segundos) e a carga de cada série. Os valores do último treino já vêm preenchidos.</p></div>
     <div class="rest" id="rest" hidden></div>
@@ -401,6 +430,7 @@ function startRest(v, s) {
 
 function drawNatacao(v) {
   v.innerHTML = `<div class="row"><button class="btn sm ghost" type="button" id="nBack">← Semana</button></div>
+    ${T().restr.sup ? '<p class="small" style="color:var(--warn)">Membros superiores pausados: confirme com o médico ou a fisioterapeuta se o crawl está liberado. Se não estiver, faça só a pernada com prancha, se for permitido, ou troque o sábado por uma caminhada longa.</p>' : ''}
     <div class="vhead"><h1>Natação</h1><p class="muted">Cerca de 2.000 m em 60 a 75 min. Este é o seu treino aeróbico mais longo da semana, sem impacto.</p></div>
     <div class="list">${NATACAO.map(([a, b]) => `<div class="li" style="border-left:4px solid #2fc4c4;align-items:flex-start"><span class="t"><b>${a}</b><br><span class="small">${b}</span></span></div>`).join('')}</div>
     <div class="card"><h2>Registrar</h2><form class="form" id="natForm"><label class="f">Distância total (m)<input type="number" inputmode="numeric" id="nM" placeholder="2000"></label><label class="f">Duração (min)<input type="number" inputmode="numeric" id="nMin" value="60"></label><label class="f">Melhor tiro de 50 m (min:seg)<input type="text" inputmode="numeric" id="n50" placeholder="0:58"></label><button class="btn primary" type="submit">Salvar</button></form></div>`;
