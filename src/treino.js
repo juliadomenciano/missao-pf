@@ -166,8 +166,60 @@ function hojeCard() {
 }
 
 let modo = null;
+let viewRef = null;
+
+function askExit(title, text, opts) {
+  return new Promise((resolve) => {
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h2>${title}</h2><p class="muted">${text}</p>${opts.map((o, i) => `<button class="btn${o.cls ? ' ' + o.cls : ''}" type="button" data-i="${i}">${o.t}</button>`).join('')}</div>`;
+    document.body.appendChild(bg);
+    bg.querySelectorAll('button').forEach((b) => b.onclick = () => { bg.remove(); resolve(opts[+b.dataset.i].v); });
+  });
+}
+
+function limpaModo() {
+  clearInterval(guiaTick); clearInterval(restTick); cancelSeries();
+  try { wake && wake.release(); } catch (e) {}
+  wake = null;
+  modo = null;
+  C.setBack(null);
+}
+
+function setHook() {
+  C.setBack(() => {
+    if (!modo) return false;
+    sair();
+    return true;
+  });
+}
+
+async function sair() {
+  const v = viewRef;
+  if (!modo || !v) return;
+  if (document.querySelector('.modal-bg')) return;
+  if (modo.tipo === 'guia') {
+    const rodou = !!modo.ini;
+    const r = await askExit('Sair do treino?', rodou ? 'Você pode salvar o que já fez, descartar tudo ou voltar para continuar.' : 'O treino ainda não começou.', rodou
+      ? [{ t: 'Continuar treinando', v: 'cont', cls: 'primary' }, { t: 'Salvar o que fiz', v: 'salvar' }, { t: 'Descartar treino', v: 'desc', cls: 'danger' }]
+      : [{ t: 'Continuar', v: 'cont', cls: 'primary' }, { t: 'Sair', v: 'desc' }]);
+    if (r === 'salvar') return finishGuia(v, true);
+    if (r === 'desc') { limpaModo(); renderTreino(v); }
+    return;
+  }
+  if (modo.tipo === 'forca') {
+    const tem = Object.values(modo.sets).some((arr) => arr.some((s) => s.r !== '' && s.r != null));
+    if (!tem) { limpaModo(); renderTreino(v); return; }
+    const r = await askExit('Sair do treino?', 'Você já preencheu séries. O que fazer com elas?', [{ t: 'Continuar treinando', v: 'cont', cls: 'primary' }, { t: 'Descartar treino', v: 'desc', cls: 'danger' }]);
+    if (r === 'desc') { limpaModo(); renderTreino(v); }
+    return;
+  }
+  limpaModo(); renderTreino(v);
+}
 
 function renderTreino(v) {
+  viewRef = v;
+  if (modo) setHook(); else C.setBack(null);
   if (modo && modo.tipo === 'guia') return drawGuia(v);
   if (modo && modo.tipo === 'forca') return drawForca(v);
   if (modo && modo.tipo === 'fim') return drawFimCorrida(v);
@@ -193,6 +245,7 @@ function renderTreino(v) {
   const comDist = runs.filter((r) => r.km > 0 && r.seg > 0);
   const melhorEst = comDist.reduce((a, r) => Math.max(a, est12(r.km, r.seg) || 0), 0);
   v.innerHTML = `<div class="vhead"><h1>Treino físico</h1><p class="muted">Semana pensada para chegar aos índices do TAF e melhorar o condicionamento geral. Domingo é livre.</p></div>
+    <div class="card"><label class="toggle"><span class="t">Aviso sonoro nas trocas de etapa<small>Apito, vibração e notificação a cada mudança nos treinos guiados e no fim do descanso da força.</small></span><input class="sw" type="checkbox" id="tSom" ${C.getDoc('cfg').somTreino !== false ? 'checked' : ''}></label></div>
     <div class="card"><div class="row between"><h2>Esta semana</h2><div class="seg" id="trLocal"><button type="button" data-l="academia" aria-pressed="${t.local === 'academia'}">Academia</button><button type="button" data-l="casa" aria-pressed="${t.local === 'casa'}">Casa</button></div></div>
       <div class="list">${dias.map((d) => `<div class="li tday${d.hoje ? ' hoje' : ''}" style="border-left:4px solid ${TIPOS[d.tipo].c}"><span class="dname">${DN[d.dow]}</span><span class="t">${d.det}</span>${d.done ? '<span class="pill ok">✓</span>' : d.tipo === 'livre' ? '' : `<button class="btn sm${d.hoje ? ' primary' : ''}" type="button" data-start="${d.dow}">${d.hoje ? 'Começar' : 'Fazer'}</button>`}</div>`).join('')}</div>
       <button class="btn sm ghost" type="button" id="trDias" style="justify-self:start">Ajustar dias</button><div id="trDiasBox" hidden></div></div>
@@ -212,6 +265,7 @@ function renderTreino(v) {
         ${melhorEst ? `<div class="stat"><span class="k">Melhor estimativa para 12 min</span><span class="v" style="color:${melhorEst >= 1800 ? 'var(--ok)' : 'var(--warn)'}">${melhorEst.toLocaleString('pt-BR')} m</span><span class="small muted">índice: 1.800 m</span></div>` : ''}
         <div class="list">${runs.slice(0, 8).map((r) => `<div class="li"><span class="t">${r.km ? `<b>${String(r.km).replace('.', ',')} km</b> em ${C.fmtClock(r.seg * 1000)} · ${pace(r.seg, r.km)}/km` : `<b>${C.esc(r.desc || 'Corrida guiada')}</b> · ${Math.round(r.seg / 60)} min`}${r.km && r.seg ? `<br><span class="small muted">≈ ${est12(r.km, r.seg).toLocaleString('pt-BR')} m em 12 min</span>` : ''}</span><span class="small muted">${C.fmtDate(r.d)}</span><button class="x" type="button" data-delrun="${r.id}" aria-label="Apagar">×</button></div>`).join('')}</div></div>
     </div>`;
+  v.querySelector('#tSom').onchange = (e) => { const c = C.getDoc('cfg'); c.somTreino = e.target.checked; C.save('cfg'); if (e.target.checked) { C.unlockAudio(); C.beepT(true); } };
   v.querySelectorAll('#trLocal button').forEach((b) => b.onclick = () => { t.local = b.dataset.l; C.save('treino'); renderTreino(v); });
   v.querySelectorAll('[data-start]').forEach((b) => b.onclick = () => iniciar(v, +b.dataset.start));
   v.querySelector('#trDias').onclick = () => editDias(v);
@@ -289,6 +343,7 @@ function armSeries(g) {
 }
 
 function drawGuia(v) {
+  viewRef = v; setHook();
   clearInterval(guiaTick);
   const g = modo;
   const p = g.ph[g.i];
@@ -301,8 +356,10 @@ function drawGuia(v) {
     <div class="guia-main"><div class="guia-nome">${nome}${p.rep ? ` <span class="num">${p.rep}</span>` : ''}</div>${p.dist ? `<div class="guia-sub">${p.dist} m · alvo ${C.fmtClock(p.s * 1000)}</div>` : ''}<div class="guia-t num" id="gT"></div><div class="guia-sub">${sub}</div></div>
     <div class="bar" style="--c:var(--gc)"><i id="gBar"></i></div>
     <p class="small muted" id="gProx">${prox ? `Depois: ${PH[prox.t][0]} · ${fmtS(prox.s)}` : 'Última etapa'}</p>
-    <div class="row guia-ctl">${!g.ini ? '<button class="btn primary" type="button" id="gGo">Começar</button>' : `<button class="btn" type="button" id="gPause">${g.pausa ? 'Continuar' : 'Pausar'}</button><button class="btn" type="button" id="gSkip">Pular etapa</button>`}<button class="btn ghost" type="button" id="gStop">Encerrar</button></div>
+    <div class="row guia-ctl">${!g.ini ? '<button class="btn primary" type="button" id="gGo">Começar</button>' : `<button class="btn" type="button" id="gPause">${g.pausa ? 'Continuar' : 'Pausar'}</button><button class="btn" type="button" id="gSkip">Pular etapa</button>`}<button class="btn ghost" type="button" id="gStop">Sair</button></div>
+    <label class="row small"><input type="checkbox" id="gSom" ${C.getDoc('cfg').somTreino !== false ? 'checked' : ''}> Aviso sonoro nas trocas de etapa</label>
     <p class="small muted">Com o app aberto, a tela fica ligada e você ouve o apito a cada troca de etapa. No Android, as trocas também chegam como notificação se a tela apagar.</p></div>`;
+  const gs = v.querySelector('#gSom'); if (gs) gs.onchange = (e) => { const c = C.getDoc('cfg'); c.somTreino = e.target.checked; C.save('cfg'); if (e.target.checked) { C.unlockAudio(); C.beepT(true); } };
   const upd = () => {
     const el = v.querySelector('#gT'); if (!el) { clearInterval(guiaTick); return; }
     const e = guiaElapsedInPhase(g);
@@ -312,11 +369,11 @@ function drawGuia(v) {
     if (g.ini && !g.pausa && left <= 0) next(v);
   };
   const go = v.querySelector('#gGo');
-  if (go) go.onclick = async () => { await askPermission(); g.ini = Date.now(); g.acum = 0; g.inicioTreino = Date.now(); try { wake = await navigator.wakeLock?.request('screen'); } catch (e) {} armSeries(g); C.beep(); vib([200]); drawGuia(v); };
+  if (go) go.onclick = async () => { await askPermission(); g.ini = Date.now(); g.acum = 0; g.inicioTreino = Date.now(); try { wake = await navigator.wakeLock?.request('screen'); } catch (e) {} armSeries(g); C.beepT(); vib([200]); drawGuia(v); };
   const pz = v.querySelector('#gPause');
   if (pz) pz.onclick = () => { if (g.pausa) { g.acum += Date.now() - g.pausa; g.pausa = null; armSeries(g); } else { g.pausa = Date.now(); cancelSeries(); } drawGuia(v); };
   const sk = v.querySelector('#gSkip'); if (sk) sk.onclick = () => next(v, true);
-  v.querySelector('#gStop').onclick = () => finishGuia(v, true);
+  v.querySelector('#gStop').onclick = () => sair();
   upd();
   if (g.ini && !g.pausa) guiaTick = setInterval(upd, 250);
 }
@@ -328,13 +385,14 @@ function next(v, manual) {
   if (g.i >= g.ph.length - 1) return finishGuia(v, false);
   g.i++; g.ini = Date.now(); g.acum = 0; g.pausa = null;
   if (manual) armSeries(g);
-  C.beep(); vib([300, 120, 300]);
+  C.beepT(); vib([300, 120, 300]);
   drawGuia(v);
 }
 
 function finishGuia(v, cedo) {
   clearInterval(guiaTick); cancelSeries();
   try { wake && wake.release(); } catch (e) {}
+  wake = null;
   const g = modo;
   const correu = g.ph.slice(0, g.i + (cedo ? 0 : 1)).filter((p) => ['corre', 'tiro', 'teste'].includes(p.t)).length;
   modo = { tipo: 'fim', g, cedo, correu, min: g.inicioTreino ? Math.round((Date.now() - g.inicioTreino) / 60000) : 0 };
@@ -342,13 +400,15 @@ function finishGuia(v, cedo) {
 }
 
 function drawFimCorrida(v) {
+  viewRef = v; setHook();
   const f = modo;
   const g = f.g;
   const teste = g.sess.teste;
   v.innerHTML = `<div class="vhead"><span class="k">Semana ${g.sem} · Corrida ${g.letra}</span><h1>${f.cedo ? 'Treino encerrado' : 'Treino concluído! 🎉'}</h1></div>
     <div class="card"><p>${f.min} min de treino.${f.cedo ? ' Encerrado antes do fim: tudo bem, conta como tentativa.' : ''}</p>
-      <form class="form" id="fimForm"><label class="f">${teste ? 'Distância no teste de 12 min (metros)' : 'Distância total, se souber (km)'}<input type="text" inputmode="decimal" id="fKm" placeholder="${teste ? '1650' : 'opcional'}"></label><label class="f">Como foi?<select id="fSens"><option>Tranquilo</option><option selected>Puxado, mas deu</option><option>Muito difícil</option></select></label><button class="btn primary" type="submit">Salvar</button></form>
+      <form class="form" id="fimForm"><label class="f">${teste ? 'Distância no teste de 12 min (metros)' : 'Distância total, se souber (km)'}<input type="text" inputmode="decimal" id="fKm" placeholder="${teste ? '1650' : 'opcional'}"></label><label class="f">Como foi?<select id="fSens"><option>Tranquilo</option><option selected>Puxado, mas deu</option><option>Muito difícil</option></select></label><div class="row"><button class="btn primary" type="submit">Salvar</button><button class="btn ghost" type="button" id="fDesc">Descartar</button></div></form>
       <p class="small muted">Se marcar "Muito difícil", o melhor é repetir esta sessão antes de avançar.</p></div>`;
+  v.querySelector('#fDesc').onclick = () => { limpaModo(); C.toast('Treino descartado.'); renderTreino(v); };
   v.querySelector('#fimForm').onsubmit = (e) => {
     e.preventDefault();
     const t = T();
@@ -362,7 +422,7 @@ function drawFimCorrida(v) {
     if (!f.cedo && sens !== 'Muito difícil') { const fe = t.corrida.feitas[g.sem] || (t.corrida.feitas[g.sem] = []); if (!fe.includes(g.letra)) fe.push(g.letra); }
     C.save('treino');
     logTaf('Corrida', f.min, run.desc, d);
-    modo = null;
+    limpaModo();
     C.toast('Corrida salva.');
     renderTreino(v);
   };
@@ -371,15 +431,16 @@ function drawFimCorrida(v) {
 let restTick = null;
 
 function drawForca(v) {
+  viewRef = v; setHook();
   const f = modo;
   const ficha = f.fichaObj || fichaAtiva(f.ficha);
-  v.innerHTML = `<div class="row between"><button class="btn sm ghost" type="button" id="fBack">← Semana</button><div class="seg" id="fLocal"><button type="button" data-l="academia" aria-pressed="${f.local === 'academia'}">Academia</button><button type="button" data-l="casa" aria-pressed="${f.local === 'casa'}">Casa</button></div></div>
+  v.innerHTML = `<div class="row between"><button class="btn sm ghost" type="button" id="fBack">← Sair do treino</button><div class="seg" id="fLocal"><button type="button" data-l="academia" aria-pressed="${f.local === 'academia'}">Academia</button><button type="button" data-l="casa" aria-pressed="${f.local === 'casa'}">Casa</button></div></div>
     <div class="vhead"><h1>${ficha.nome}</h1><p class="muted">Preencha as repetições (ou segundos) e a carga de cada série. Os valores do último treino já vêm preenchidos.</p></div>
     <div class="rest" id="rest" hidden></div>
     ${ficha.ex.map((e) => { const sug = sugestao(e, f.last); return `<div class="card ex" data-ex="${e.id}"><div class="row between"><h3>${e.n}</h3><span class="pill">${e.series} × ${e.alvo}</span></div><p class="small muted">${f.local === 'casa' ? e.casa : e.acad}</p>${sug ? `<p class="small" style="color:var(--ok)">${sug}</p>` : ''}
       <div class="sets">${f.sets[e.id].map((s, i) => `<div class="set${s.ok ? ' ok' : ''}" data-i="${i}"><span class="n">${i + 1}</span><input type="number" inputmode="numeric" placeholder="${e.unid === 's' ? 'seg' : e.unid === 'cm' ? 'cm' : 'reps'}" value="${s.r}" data-f="r" aria-label="Série ${i + 1}">${e.unid ? '' : `<input type="number" inputmode="decimal" placeholder="kg" value="${s.kg}" data-f="kg" aria-label="Carga série ${i + 1}">`}<button class="btn sm${s.ok ? ' primary' : ''}" type="button" data-ok="${i}">✓</button></div>`).join('')}</div></div>`; }).join('')}
     <div class="row"><button class="btn primary" type="button" id="fSave">Concluir treino</button></div>`;
-  v.querySelector('#fBack').onclick = () => { modo = null; renderTreino(v); };
+  v.querySelector('#fBack').onclick = () => sair();
   v.querySelectorAll('#fLocal button').forEach((b) => b.onclick = () => { f.local = b.dataset.l; drawForca(v); });
   v.querySelectorAll('.ex').forEach((card) => {
     const e = ficha.ex.find((x) => x.id === card.dataset.ex);
@@ -402,8 +463,7 @@ function drawForca(v) {
     const sal = (ex.salto || []).map((x) => x.r);
     if (sal.length) { const best = Math.max(...sal); if (best > 50) C.addMarca('imp', best / 100); }
     logTaf(TIPOS[f.ficha].n, 45, f.local === 'casa' ? 'em casa' : 'academia', C.dkey());
-    clearInterval(restTick);
-    modo = null;
+    limpaModo();
     C.toast('Treino de força salvo 💪');
     renderTreino(v);
   };
@@ -424,17 +484,18 @@ function startRest(v, s) {
   const box = v.querySelector('#rest'); if (!box) return;
   const fim = Date.now() + s * 1000;
   box.hidden = false;
-  const upd = () => { const left = fim - Date.now(); if (!document.body.contains(box)) { clearInterval(restTick); return; } if (left <= 0) { box.innerHTML = '<b>Descanso acabou: próxima série!</b>'; C.beep(); vib([200, 100, 200]); clearInterval(restTick); setTimeout(() => { box.hidden = true; }, 4000); return; } box.innerHTML = `Descanso <b class="num">${C.fmtClock(left)}</b> <button class="btn sm ghost" type="button" id="restX">Pular</button>`; const x = box.querySelector('#restX'); if (x) x.onclick = () => { clearInterval(restTick); box.hidden = true; }; };
+  const upd = () => { const left = fim - Date.now(); if (!document.body.contains(box)) { clearInterval(restTick); return; } if (left <= 0) { box.innerHTML = '<b>Descanso acabou: próxima série!</b>'; C.beepT(); vib([200, 100, 200]); clearInterval(restTick); setTimeout(() => { box.hidden = true; }, 4000); return; } box.innerHTML = `Descanso <b class="num">${C.fmtClock(left)}</b> <button class="btn sm ghost" type="button" id="restX">Pular</button>`; const x = box.querySelector('#restX'); if (x) x.onclick = () => { clearInterval(restTick); box.hidden = true; }; };
   upd(); restTick = setInterval(upd, 500);
 }
 
 function drawNatacao(v) {
-  v.innerHTML = `<div class="row"><button class="btn sm ghost" type="button" id="nBack">← Semana</button></div>
+  viewRef = v; modo = { tipo: 'nat' }; setHook();
+  v.innerHTML = `<div class="row"><button class="btn sm ghost" type="button" id="nBack">← Voltar</button></div>
     ${T().restr.sup ? '<p class="small" style="color:var(--warn)">Membros superiores pausados: confirme com o médico ou a fisioterapeuta se o crawl está liberado. Se não estiver, faça só a pernada com prancha, se for permitido, ou troque o sábado por uma caminhada longa.</p>' : ''}
     <div class="vhead"><h1>Natação</h1><p class="muted">Cerca de 2.000 m em 60 a 75 min. Este é o seu treino aeróbico mais longo da semana, sem impacto.</p></div>
     <div class="list">${NATACAO.map(([a, b]) => `<div class="li" style="border-left:4px solid #2fc4c4;align-items:flex-start"><span class="t"><b>${a}</b><br><span class="small">${b}</span></span></div>`).join('')}</div>
     <div class="card"><h2>Registrar</h2><form class="form" id="natForm"><label class="f">Distância total (m)<input type="number" inputmode="numeric" id="nM" placeholder="2000"></label><label class="f">Duração (min)<input type="number" inputmode="numeric" id="nMin" value="60"></label><label class="f">Melhor tiro de 50 m (min:seg)<input type="text" inputmode="numeric" id="n50" placeholder="0:58"></label><button class="btn primary" type="submit">Salvar</button></form></div>`;
-  v.querySelector('#nBack').onclick = () => renderTreino(v);
+  v.querySelector('#nBack').onclick = () => { limpaModo(); renderTreino(v); };
   v.querySelector('#natForm').onsubmit = (e) => {
     e.preventDefault();
     const t = T();
@@ -447,6 +508,7 @@ function drawNatacao(v) {
     if (t50 > 0) C.addMarca('nat', t50);
     logTaf('Natação', min, metros ? `${metros} m` : '', C.dkey());
     C.toast('Natação salva 🏊');
+    limpaModo();
     renderTreino(v);
   };
 }

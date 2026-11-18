@@ -14,6 +14,7 @@
 <body>
 <header class="top"><div class="in">
   <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button class="back-btn" id="backBtn" type="button" aria-label="Voltar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <span class="top-title" id="topTitle">Missão PF</span>
   <button class="mini-timer" id="miniTimer" type="button" aria-label="Abrir pomodoro"><i></i><span></span></button>
   <span class="sync" id="sync" title="Onde seus dados estão salvos">carregando…</span>
@@ -63,6 +64,7 @@
       </div>
       <div class="pomo-ctrl">
         <button class="btn primary" type="button" id="pStart">Iniciar</button>
+        <button class="btn" type="button" id="pRestart">Reiniciar</button>
         <button class="btn" type="button" id="pSkip">Pular etapa</button>
         <button class="btn" type="button" id="pStop">Parar e registrar</button>
       </div>
@@ -78,7 +80,7 @@
           <label class="f">Focos até a pausa longa<input type="number" min="2" max="8" id="cfCiclos"></label>
         </div>
         <label class="row small"><input type="checkbox" id="cfSom"> Tocar som ao fim de cada etapa</label>
-        <label class="row small"><input type="checkbox" id="cfAuto"> Começar a próxima etapa sozinho</label>
+        <label class="row small"><input type="checkbox" id="cfAuto"> Passar para a próxima etapa automaticamente (sem precisar tocar em Iniciar)</label>
       </div>
       <div class="card">
         <h2>Registrar estudo sem timer</h2>

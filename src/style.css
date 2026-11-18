@@ -329,3 +329,14 @@ button.li:hover{border-color:var(--line)}
 .tl::before{content:"";position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--line)}
 .tl.on::before{background:var(--ok);border-color:var(--ok)}
 .tl:last-child{padding-bottom:2px}
+
+.back-btn{border:0;background:var(--surface);color:var(--text);width:38px;height:38px;border-radius:10px;display:grid;place-items:center;cursor:pointer;flex:none;margin-left:-4px}
+.back-btn[hidden]{display:none}
+.back-btn:hover{background:var(--surface2)}
+.back-btn svg{width:22px;height:22px}
+.hl .hmin{width:76px;text-align:right;padding:6px 8px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:grid;place-items:center;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:380px;width:100%;display:grid;gap:12px}
+.modal h2{margin:0}
+.modal .btn{width:100%}
+.btn.danger{border-color:var(--bad);color:var(--bad)}

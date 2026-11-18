@@ -5,7 +5,7 @@ const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const TABLE = 'mpf_docs';
 
 export const sb = URL && KEY
-  ? createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'mpf-auth' } })
+  ? createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'mpf-auth', lock: async (_name, _timeout, fn) => fn() } })
   : null;
 
 const ls = {
@@ -115,7 +115,10 @@ export async function start(h) {
 }
 
 export async function signIn(email, password) {
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  const { data, error } = await Promise.race([
+    sb.auth.signInWithPassword({ email, password }),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('network timeout')), 20000)),
+  ]);
   if (error) throw error;
   return data.user;
 }
